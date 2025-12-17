@@ -1,0 +1,16 @@
+# Visual Studio / .NET
+.vs/
+bin/
+obj/
+*.user
+*.suo
+*.cache
+*.log
+
+# Rider/IDE
+.idea/
+*.sln.iml
+
+# OS
+Thumbs.db
+.DS_Store
