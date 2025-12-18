@@ -14,3 +14,9 @@ obj/
 # OS
 Thumbs.db
 .DS_Store
+
+# Local secrets / config (do NOT commit)
+# Ignore project appsettings and any env file containing credentials
+**/appsettings.json`
+**/appsettings.Development.json
+.env

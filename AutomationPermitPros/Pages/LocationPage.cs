@@ -8,5 +8,6 @@ namespace AutomationPermitPros.Pages
 {
     internal class LocationPage
     {
+
     }
 }
