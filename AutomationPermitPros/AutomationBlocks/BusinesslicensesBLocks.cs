@@ -1,64 +1,98 @@
-﻿using AutomationPermitPros.Pages;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using AutomationPermitPros.Pages;
+using Microsoft.Playwright;
 
 namespace AutomationPermitPros.AutomationBlocks
 {
     public class BusinesslicensesBLocks
     {
-        private readonly BusinessLicensesPage _page;
+        private readonly IPage _page;
+        private readonly BusinessLicensesPage _businessPage;
 
-        public BusinesslicensesBLocks(BusinessLicensesPage page)
+        public BusinesslicensesBLocks(IPage page)
         {
             _page = page;
+            _businessPage = new BusinessLicensesPage(page);
         }
 
-        //Create New Button
-        public async Task<bool> BUSLIC_CREATE_NEW()
+        public async Task<bool> BUSLIC_ENTER_LOCATIONNUMBER(string locationNumber)
         {
             try
             {
-                await _page.ClickCreateNew();
-                return await _page.IsCreatePageLoaded();
+                await _businessPage.FillLocationNumberAsync(locationNumber);
+                return true;
             }
-            catch
+            catch (Exception ex)
             {
-                return false;
-            }
-        }
-        //Search Button
-        public async Task<bool> BUSLIC_SearchButton()
-        {
-            try
-            {
-                await _page.ClickSearch();
-                return await _page.IsCreatePageLoaded();
-            }
-            catch
-            {
+                Console.WriteLine($"[BUSLIC_ENTER_LOCATIONNUMBER] Error: {ex.Message}");
+                Console.WriteLine(ex.StackTrace);
                 return false;
             }
         }
 
-        //Export to Excel
-        public async Task<bool> EXPORT_EXCEL()
+        public async Task<bool> BUSLIC_ENTER_LOCATIONNAME(string locationName)
         {
             try
             {
-                var filePath = await _page.ExportToExcel();
-                return File.Exists(filePath);
+                await _businessPage.FillLocationNameAsync(locationName);
+                return true;
             }
-            catch
+            catch (Exception ex)
             {
+                Console.WriteLine($"[BUSLIC_ENTER_LOCATIONNAME] Error: {ex.Message}");
+                Console.WriteLine(ex.StackTrace);
                 return false;
             }
         }
 
+        public async Task<bool> BUSLIC_ENTER_LICENSENUMBER(string licenseNumber)
+        {
+            try
+            {
+                await _businessPage.FillLicenseNumberAsync(licenseNumber);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[BUSLIC_ENTER_LICENSENUMBER] Error: {ex.Message}");
+                Console.WriteLine(ex.StackTrace);
+                return false;
+            }
+        }
 
+        public async Task<bool> BUSLIC_SELECT_LICENSETYPE(string licenseType)
+        {
+            try
+            {
+                await _businessPage.SelectLicenseTypeAsync(licenseType);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[BUSLIC_SELECT_LICENSETYPE] Error: {ex.Message}");
+                Console.WriteLine(ex.StackTrace);
+                return false;
+            }
+        }
 
+        public async Task<bool> BUSLIC_SELECT_STATE(string state)
+        {
+            try
+            {
+                await _businessPage.SelectStateAsync(state);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[BUSLIC_SELECT_STATE] Error: {ex.Message}");
+                Console.WriteLine(ex.StackTrace);
+
+                return false;
+            }
+        }
     }
 }
-
