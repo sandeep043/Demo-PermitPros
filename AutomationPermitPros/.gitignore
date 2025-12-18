@@ -1,0 +1,21 @@
+# Ignore local app settings containing secrets
+AppSettings.json
+appSettings.json
+appsettings.Development.json
+
+# Visual Studio user files and caches
+.vs/
+.vscode/
+*.user
+*.suo
+
+# Build artifacts
+bin/
+obj/
+
+# IDE / OS cruft
+*.vsix
+.idea/
+*.rider*
+.DS_Store
+Thumbs.db
