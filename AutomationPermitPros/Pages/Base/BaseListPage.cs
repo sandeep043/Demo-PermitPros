@@ -16,7 +16,7 @@ namespace AutomationPermitPros.Pages.Base
 
         }
         protected ILocator CreateNewButton =>
-            _page.Locator("button:has-text('Create New')"); 
+            _page.GetByRole(AriaRole.Button, new() { Name= "Create New" }); 
         
             protected ILocator SearchButton =>
                 _page.GetByRole(AriaRole.Button, new() { Name = "Search" });

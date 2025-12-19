@@ -94,5 +94,49 @@ namespace AutomationPermitPros.AutomationBlocks
                 return false;
             }
         }
+
+        public async Task<bool> BUSLIC_CREATE_NEW()
+        {
+            try
+            {
+                await _businessPage.ClickCreateNew();
+                return await _businessPage.IsCreatePageLoaded();
+            }
+            catch
+            {
+                return false;
+            }
+        }
+        //Search Button
+        public async Task<bool> BUSLIC_SEARCHBUTTON()
+        {
+            try
+            {
+                await _businessPage.ClickSearch();
+                return await _businessPage.IsCreatePageLoaded();
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        //Export to Excel
+        public async Task<bool> EXPORT_EXCEL()
+        {
+            try
+            {
+                var filePath = await _businessPage.ExportToExcel();
+                return File.Exists(filePath);
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+
+
     }
 }
+
