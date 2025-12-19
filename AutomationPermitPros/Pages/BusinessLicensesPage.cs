@@ -1,4 +1,5 @@
-﻿using Microsoft.Playwright;
+﻿using AutomationPermitPros.Pages.Base;
+using Microsoft.Playwright;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -9,15 +10,24 @@ using static System.Net.Mime.MediaTypeNames;
 
 namespace AutomationPermitPros.Pages
 {
-    public class BusinessLicensesPage
+    public class BusinessLicensesPage:BaseListPage
     {
 
         private readonly IPage _page;
 
-        public BusinessLicensesPage(IPage page)
+        public BusinessLicensesPage(IPage page) : base(page) 
         {
             _page = page;
         }
+
+        private ILocator PageHeader =>
+        _page.Locator("h5:has-text('Business Licenses')");
+
+
+        private ILocator CreatePageHeader =>
+            _page.Locator("h4:has-text('Create Business License')");
+
+        
 
         private ILocator LocationNumberInput => _page.GetByRole(AriaRole.Textbox, new() { Name = "Enter Location Number" });
         private ILocator LocationNameInput => _page.GetByRole(AriaRole.Textbox, new() { Name = "Enter Location Name" });
@@ -28,6 +38,16 @@ namespace AutomationPermitPros.Pages
 
         // State <select> as combobox
         private ILocator StateDropdown => _page.GetByRole(AriaRole.Combobox, new() { Name = "State" });
+
+        public async Task<bool> IsListPageLoaded()
+        {
+            return await PageHeader.IsVisibleAsync();
+        }
+
+        public async Task<bool> IsCreatePageLoaded()
+        {
+            return await CreatePageHeader.IsVisibleAsync();
+        }
 
         // Async helpers
         public async Task FillLocationNumberAsync(string value)
