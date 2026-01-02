@@ -21,25 +21,30 @@ namespace AutomationPermitPros.Pages
         /// </summary>
         public async Task ClickMenuAsync(string menuName)
         {
-            // Try to find an accessible link with the given name
-            var menuItem = _page.GetByRole(AriaRole.Link, new() { Name = menuName });
-
-            if (await menuItem.CountAsync() == 0)
+            // Ensure sidebar exists
+            var sidebar = _page.Locator("nav, .sidebar, [data-testid=\"sidebar\"]");
+            if (await sidebar.CountAsync() == 0)
             {
-                // Fallback to a button role
-                menuItem = _page.GetByRole(AriaRole.Button, new() { Name = menuName });
+                // allow global fallback (some layouts do not use <nav>)
+                sidebar = _page.Locator("body");
             }
 
-            if (await menuItem.CountAsync() == 0)
-            {
-                // Final fallback: match by visible text anywhere in the sidebar
-                menuItem = _page.GetByText(menuName);
-            }
+            // Try role link/button inside sidebar first
+            var item = sidebar.GetByRole(AriaRole.Link, new() { Name = menuName });
+            if (await item.CountAsync() == 0)
+                item = sidebar.GetByRole(AriaRole.Button, new() { Name = menuName });
+            if (await item.CountAsync() == 0)
+                item = sidebar.GetByText(menuName);
 
-            var target = menuItem.First;
-            await target.WaitForAsync(new() { Timeout = 10000 });
+            if (await item.CountAsync() == 0)
+                throw new InvalidOperationException($"Sidebar menu item '{menuName}' not found on the current page.");
+
+            var target = item.First;
+            await target.WaitForAsync(new() { Timeout = 20_000 });
+            await target.ScrollIntoViewIfNeededAsync();
             await target.ClickAsync();
             await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
         }
+
     }
-}
+    }

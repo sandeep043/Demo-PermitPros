@@ -135,6 +135,30 @@ namespace AutomationPermitPros.AutomationBlocks
             }
         }
 
+        public async Task<bool>BUSLIC_CREATE_BTN()
+        {             try
+            {
+                await _businessPage.ClickCreateButtonAsync();
+                return await _businessPage.IsCreatePageLoaded();
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        public async Task<bool> BUSLIC_DELETE_ICON()
+        {
+            try
+            {
+                await _businessPage.BUSLIC_Click_DeleteIcon();
+                return await _businessPage.IsCreatePageLoaded();
+            }
+            catch
+            {
+                return false;
+            }
+        }
 
 
     }

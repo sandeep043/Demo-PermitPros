@@ -389,6 +389,16 @@ namespace AutomationPermitPros.Pages
             await _baseListPage.ClickSearch();
         }
 
+        public async Task<bool> BUSLIC_Click_DeleteIcon()
+        {
+            return await _baseListPage.Click_DeleteIcon();
+        }
+
+        public async Task<bool> BUSLIC_Adv_Delete()
+        {
+            return await _baseListPage.Adv_Delete();
+        }
+
         public async Task<string> ExportToExcel()
         {
             return await _baseListPage.ExportToExcel();
