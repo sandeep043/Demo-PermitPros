@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection.Emit;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -12,18 +13,32 @@ namespace AutomationPermitPros.Pages.Base
     {
         protected readonly IPage _page;
 
-        public BaseListPage(IPage page) {
+        public BaseListPage(IPage page)
+        {
             _page = page;
 
         }
         protected ILocator CreateNewButton =>
-            _page.GetByRole(AriaRole.Button, new() { Name= "Create New" }); 
-        
-            protected ILocator SearchButton =>
-                _page.GetByRole(AriaRole.Button, new() { Name = "Search" });
+            _page.GetByRole(AriaRole.Button, new() { Name = "Create New" });
+
+        protected ILocator SearchButton =>
+            _page.GetByRole(AriaRole.Button, new() { Name = "Search" });
 
         protected ILocator ExportToExcelButton =>
-            _page.GetByRole(AriaRole.Button,new() { Name = "Export to Excel" });
+            _page.GetByRole(AriaRole.Button, new() { Name = "Export to Excel" });
+
+
+        protected ILocator DeleteIconButton =>
+            _page.Locator("button[aria-label='Delete']");
+
+
+
+        protected ILocator confirmButton =>
+            _page.GetByRole(AriaRole.Button, new() { Name = "Delete" });
+
+
+
+
 
         public async Task ClickCreateNew()
         {
@@ -55,13 +70,13 @@ namespace AutomationPermitPros.Pages.Base
             return filePath;
         }
 
-        
+
         private async Task<ILocator> FindInputByLabelAsync(string label)
         {
             if (string.IsNullOrWhiteSpace(label))
                 throw new ArgumentException("label must be provided", nameof(label));
 
-            
+
             var byLabel = _page.GetByLabel(label);
             if (await byLabel.CountAsync() > 0)
                 return byLabel;
@@ -90,7 +105,7 @@ namespace AutomationPermitPros.Pages.Base
             throw new Exception($"Input for label '{label}' not found on the page.");
         }
 
-        
+
         public async Task FillDateFieldAsync(string label, string dateValue)
         {
             var input = await FindInputByLabelAsync(label);
@@ -121,7 +136,7 @@ namespace AutomationPermitPros.Pages.Base
             var header = _page.Locator($"th:has-text(\"{columnLabel}\")");
             if (await header.CountAsync() == 0)
             {
-                
+
                 header = _page.Locator($":text(" + "\"" + columnLabel + "\"" + ")");
                 if (await header.CountAsync() == 0)
                     throw new Exception($"Column header '{columnLabel}' not found on the page.");
@@ -129,7 +144,7 @@ namespace AutomationPermitPros.Pages.Base
 
             var desired = ascending ? "ascending" : "descending";
 
-            
+
             async Task<string?> ReadAriaSortAsync()
             {
                 var v = await header.GetAttributeAsync("aria-sort");
@@ -140,7 +155,7 @@ namespace AutomationPermitPros.Pages.Base
             if (string.Equals(current, desired, StringComparison.OrdinalIgnoreCase))
                 return true;
 
-           
+
             ILocator sortControl = header.Locator("button");
             if (await sortControl.CountAsync() == 0)
                 sortControl = header.Locator("svg");
@@ -170,6 +185,38 @@ namespace AutomationPermitPros.Pages.Base
 
             return false;
         }
+
+
+
+        public async Task<bool> Click_DeleteIcon()
+        {
+
+            try
+            {
+                await DeleteIconButton.ClickAsync();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+
+        }
+
+        public async Task<bool> Adv_Delete()
+        {
+            try
+            {
+
+                await confirmButton.ClickAsync();
+                await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
     }
-}
+    }
 

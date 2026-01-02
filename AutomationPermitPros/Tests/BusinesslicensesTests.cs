@@ -80,23 +80,64 @@ namespace AutomationPermitPros.Tests
             await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
             await _page.WaitForTimeoutAsync(2000);
         }
-        [Test]
-        public async Task BusinessLicenses_SearchWithLocationNameLicenseNumbers()
-        {
-            
 
-            //select Business Licenses from left menu 
+
+
+        [Test]
+        public async Task BusinessLicenses_CreateNewBusinessLicense_withRequiredFields()
+        {
+
             var sideBar = new SidebarNavigationBlock(_page);
             var navigationResult = await sideBar.NavigateToAsync("Business Licenses");
-
-            //Enter Location Name and License Number and click on search button 
+            //Click on Create New Business License button 
             var BusinesslicensesBLock = new BusinesslicensesBLocks(_page);
-            var enterLocationNameResult = await BusinesslicensesBLock.BUSLIC_ENTER_LOCATIONNAME("uganda");
-            var enterLicenseNumberResult = await BusinesslicensesBLock.BUSLIC_ENTER_LICENSENUMBER("12345");
-            var searchButtonResult = await BusinesslicensesBLock.BUSLIC_SEARCHBUTTON();
+
+            var createNewButtonResult = await BusinesslicensesBLock.BUSLIC_CREATE_NEW();
+
+            //Enter Location Number, Location Name , License Number , select License Type , State from dropdowns and click on Save button
+            var enterLocationNumberResult = await BusinesslicensesBLock.BUSLIC_ENTER_LOCATIONNUMBER("001");
+            var enterLocationNameResult = await BusinesslicensesBLock.BUSLIC_ENTER_LOCATIONNAME("Test Location");
+            var enterLicenseNumberResult = await BusinesslicensesBLock.BUSLIC_ENTER_LICENSENUMBER("LIC123456");
+            var selectLicenseTypeResult = await BusinesslicensesBLock.BUSLIC_SELECT_LICENSETYPE("Business");
+            var selectStateResult = await BusinesslicensesBLock.BUSLIC_SELECT_STATE("California");
+            var saveButtonResult = await BusinesslicensesBLock.BUSLIC_CREATE_BTN();
             // set Network Idle timeout to 10 seconds    
             await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
             await _page.WaitForTimeoutAsync(2000);
         }
+
+
+        [Test]
+        public async Task BusinessLicenses_CreateNewBussinessLicenseAndDeleteLicenseBySearch_()
+        {
+            
+            var sideBar = new SidebarNavigationBlock(_page);
+            var navigationResult = await sideBar.NavigateToAsync("Business Licenses");
+            //Click on Create New Business License button 
+            var BusinesslicensesBLock = new BusinesslicensesBLocks(_page);
+            var createNewButtonResult = await BusinesslicensesBLock.BUSLIC_CREATE_NEW();
+            //Enter Location Number, Location Name , License Number , select License Type , State from dropdowns and click on Save button
+            var enterLocationNumberResult = await BusinesslicensesBLock.BUSLIC_ENTER_LOCATIONNUMBER("002");
+            var enterLocationNameResult = await BusinesslicensesBLock.BUSLIC_ENTER_LOCATIONNAME("Delete Test Location");
+            var enterLicenseNumberResult = await BusinesslicensesBLock.BUSLIC_ENTER_LICENSENUMBER("123444");
+            var selectLicenseTypeResult = await BusinesslicensesBLock.BUSLIC_SELECT_LICENSETYPE("Business");
+            var selectStateResult = await BusinesslicensesBLock.BUSLIC_SELECT_STATE("California");
+            var saveButtonResult = await BusinesslicensesBLock.BUSLIC_CREATE_BTN();
+            await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+            await _page.WaitForTimeoutAsync(2000);
+
+
+            //Search the created license by License Number and delete it 
+            var enterLicenseNumberSearchResult = await BusinesslicensesBLock.BUSLIC_ENTER_LICENSENUMBER("123444");
+            var searchButtonResult = await BusinesslicensesBLock.BUSLIC_SEARCHBUTTON();
+            var deleteLicenseResult = await BusinesslicensesBLock.BUSLIC_DELETE_ICON();
+            var confirmDeleteResult = await BusinesslicensesBLock.BUSLIC_DELETE_ICON();
+
+            // set Network Idle timeout to 10 seconds    
+            await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+            await _page.WaitForTimeoutAsync(2000);
+
+        }
+
     }
 }
