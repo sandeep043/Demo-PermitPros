@@ -108,10 +108,76 @@ namespace AutomationPermitPros.Pages.Base
 
         public async Task FillDateFieldAsync(string label, string dateValue)
         {
-            var input = await FindInputByLabelAsync(label);
-            await input.FillAsync(dateValue);
+            // 🔑 Locate the REAL MUI input
+            var input = _page.Locator("input[placeholder='MM/DD/YYYY']").First;
+
+            await input.WaitForAsync(new() { State = WaitForSelectorState.Visible });
+
+            // Focus
+            await input.ClickAsync();
+
+            // Clear mask
+            await input.PressAsync("Control+A");
+            await input.PressAsync("Backspace");
+
+            // Type slowly (MUI requires this)
+            await input.TypeAsync(dateValue, new LocatorTypeOptions
+            {
+                Delay = 100
+            });
+
+            // Commit value
+            await input.PressAsync("Enter");
+
+            // Force blur so React commits state
+            await _page.Mouse.ClickAsync(5, 5);
+
+            // ✅ VERIFY value actually changed
+            var value = await input.InputValueAsync();
+            if (value != dateValue)
+                throw new Exception($"Date not set correctly. Expected: {dateValue}, Actual: {value}");
+        }
+
+        public async Task SelectMuiDateFromCalendarAsync(
+        int calendarIndex,
+        string year,
+        string day)
+        {
+            // 1️⃣ Open calendar
+            await _page
+                .GetByRole(AriaRole.Button, new() { Name = "Choose date" })
+                .Nth(calendarIndex)
+                .ClickAsync();
+
+            await _page.WaitForTimeoutAsync(500); // Small wait for animation
+
+            // 2️⃣ Click header to open year selection
+            await _page
+                .GetByRole(AriaRole.Button, new() { Name = "calendar view is open, switch" })
+                .ClickAsync();
+
+            await _page.WaitForTimeoutAsync(500); // Small wait for year view
+
+            // 3️⃣ Select year (it's a radio button, not gridcell)
+            var yearCell = _page.GetByRole(
+                AriaRole.Radio,
+                new() { Name = year, Exact = true }
+            );
+            await yearCell.ScrollIntoViewIfNeededAsync();
+            await yearCell.ClickAsync();
+
+            await _page.WaitForTimeoutAsync(500); // Small wait after year selection
+
+            // 4️⃣ Select day
+            var dayCell = _page.GetByRole(
+                AriaRole.Gridcell,
+                new() { Name = day, Exact = true }
+            );
+            await dayCell.ClickAsync();
+
             await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
         }
+
 
 
         public async Task<bool> SetDateByLabelAsync(string label, string dateValue)
