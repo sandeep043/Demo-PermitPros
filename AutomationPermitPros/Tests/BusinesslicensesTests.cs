@@ -95,13 +95,25 @@ namespace AutomationPermitPros.Tests
             var createNewButtonResult = await BusinesslicensesBLock.BUSLIC_CREATE_NEW();
 
             //Enter Location Number, Location Name , License Number , select License Type , State from dropdowns and click on Save button
-            var enterLocationNumberResult = await BusinesslicensesBLock.BUSLIC_ENTER_LOCATIONNUMBER("001");
-            var enterLocationNameResult = await BusinesslicensesBLock.BUSLIC_ENTER_LOCATIONNAME("Test Location");
+            //var enterLocationNumberResult = await BusinesslicensesBLock.BUSLIC_ENTER_LOCATIONNUMBER("001");
+            var selectLocationResult = await BusinesslicensesBLock.BUSLIC_SELECT_LOCATION("gf");
+            //var enterLocationNameResult = await BusinesslicensesBLock.BUSLIC_ENTER_LOCATIONNAME("Test Location");
             var enterLicenseNumberResult = await BusinesslicensesBLock.BUSLIC_ENTER_LICENSENUMBER("LIC123456");
-            var selectLicenseTypeResult = await BusinesslicensesBLock.BUSLIC_SELECT_LICENSETYPE("Business");
-            var selectStateResult = await BusinesslicensesBLock.BUSLIC_SELECT_STATE("California");
+            var selectLicenseTypeResult = await BusinesslicensesBLock.BUSLIC_SELECT_LICENSETYPE("Beer");
+            var selectRenewalDateResult =
+             await BusinesslicensesBLock
+            .BUSLIC_SELECT_RENEWALDATE_CALENDAR(
+                //month: "January",
+                year: "2002",
+                day: "5"
+        );
+            var selectAgencyResult = await BusinesslicensesBLock.BUSLIC_SELECT_AGENCY();
+            var selectExperationDateResult = await BusinesslicensesBLock.BUSLIC_SELECT_EXPERATIONDATE_CALENDAR();
+
+            //var selectStateResult = await BusinesslicensesBLock.BUSLIC_SELECT_STATE("California");
             var saveButtonResult = await BusinesslicensesBLock.BUSLIC_CREATE_BTN();
-            // set Network Idle timeout to 10 seconds    
+
+            // set Network Idle timeout to 10 seconds       
             await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
             await _page.WaitForTimeoutAsync(2000);
         }

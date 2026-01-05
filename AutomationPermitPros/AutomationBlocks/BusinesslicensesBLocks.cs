@@ -34,6 +34,19 @@ namespace AutomationPermitPros.AutomationBlocks
             }
         }
 
+        public async Task<bool> BUSLIC_SELECT_AGENCY()
+        {
+            try
+            {
+                await _businessPage.SelectAgencyAsync("ABC"); return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("BUSLIC SELECT AGENCY ERROR ", ex.Message);
+                return false;
+            }
+        }
+
         public async Task<bool> BUSLIC_ENTER_LOCATIONNAME(string locationName)
         {
             try
@@ -63,6 +76,55 @@ namespace AutomationPermitPros.AutomationBlocks
                 return false;
             }
         }
+
+           
+        public async Task<bool> BUSLIC_SELECT_LOCATION(string location)
+        {
+            try
+            {
+                await _businessPage.SelectLocationAsync(location);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[BUSLIC_SELECT_LOCATION] Error: {ex.Message}");
+                Console.WriteLine(ex.StackTrace);
+                return false;
+            }
+        }
+
+        public async Task<bool> BUSLIC_SELECT_RENEWALDATE_CALENDAR(
+          string year,
+          string day)
+        {
+            try
+            {
+                await _businessPage.SelectRenewalDateFromCalendarAsync(year, day);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[BUSLIC_SELECT_RENEWALDATE_CALENDAR] {ex.Message}");
+                return false;
+            }
+        }
+
+
+        public async Task<bool> BUSLIC_SELECT_EXPERATIONDATE_CALENDAR()
+        {
+            try
+            {
+                await _businessPage.SelectExperitionDateFromCalendarAsync("2025", "15");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[BUSLIC_SELECT_EXPERATIONDATE_CALENDAR] {ex.Message}");
+                return false;
+            }
+        }
+
+
 
         public async Task<bool> BUSLIC_SELECT_LICENSETYPE(string licenseType)
         {

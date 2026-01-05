@@ -80,26 +80,34 @@ namespace AutomationPermitPros.Pages
 
         public async Task SelectLicenseTypeAsync(string optionLabel)
         {
-            // try react-select combobox input first
             var select = LicenseTypeSelectInput;
-            if (await select.CountAsync() > 0)
-            {
-                await select.ClickAsync();
-                await select.FillAsync(optionLabel);
-                await select.PressAsync("Enter");
-                await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
-                return;
-            }
 
-            // fallback to labeled combobox
-            if (await LicenseTypeDropdown.CountAsync() > 0)
-            {
-                await LicenseTypeDropdown.SelectOptionAsync(new SelectOptionValue { Label = optionLabel });
-                return;
-            }
+            if (await select.CountAsync() == 0)
+                throw new Exception("License type combobox not found.");
 
-            throw new Exception("License type control not found.");
+            // 1️⃣ Open dropdown
+            await select.ClickAsync();
+
+            // 2️⃣ Type filter text
+            await select.FillAsync(optionLabel);
+
+            // 3️⃣ Wait for option to appear (CRITICAL)
+            var option = _page.GetByRole(
+                AriaRole.Option,
+                new() { Name = optionLabel }
+            );
+
+            await option.WaitForAsync(new() { Timeout = 5000 });
+
+            // 4️⃣ Click the option explicitly
+            await option.ClickAsync();
+
+            // 5️⃣ Verify selection actually happened
+            var selectedValue = await select.InputValueAsync();
+            if (!selectedValue.Contains(optionLabel, StringComparison.OrdinalIgnoreCase))
+                throw new Exception($"License Type '{optionLabel}' was not selected.");
         }
+
 
         public async Task SelectStateAsync(string stateLabel)
         {
@@ -110,20 +118,34 @@ namespace AutomationPermitPros.Pages
         public async Task SelectLocationAsync(string locationLabel)
         {
             var input = LocationSelectInput;
+
             if (await input.CountAsync() == 0)
-            {
-                // try any combobox as fallback
                 input = _page.GetByRole(AriaRole.Combobox).First;
-            }
 
             if (await input.CountAsync() == 0)
-                throw new Exception("Location select input not found on create page.");
+                throw new Exception("Location select input not found.");
 
+            // 1️⃣ Open dropdown
             await input.ClickAsync();
+
+            // 2️⃣ Type filter text
             await input.FillAsync(locationLabel);
-            await input.PressAsync("Enter");
-            await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+
+            // 3️⃣ WAIT for at least one option to appear (CRITICAL)
+            var firstOption = _page.GetByRole(AriaRole.Option).First;
+
+            await firstOption.WaitForAsync(new() { Timeout = 5000 });
+
+            // 4️⃣ Click first option explicitly
+            await firstOption.ClickAsync();
+
+            // 5️⃣ Verify selection actually happened
+            var selectedValue = await input.InputValueAsync();
+            if (string.IsNullOrWhiteSpace(selectedValue))
+                throw new Exception("Location was not selected.");
         }
+
+
 
         public async Task SelectAgencyAsync(string agencyLabel)
         {
@@ -265,6 +287,32 @@ namespace AutomationPermitPros.Pages
 
         public async Task FillRenewalDateAsync(string dateValue)
             => await _baseListPage.FillDateFieldAsync("Renewal Date", dateValue);
+
+        public async Task SelectRenewalDateFromCalendarAsync(
+      string year,
+      string day)
+        {
+            await _baseListPage.SelectMuiDateFromCalendarAsync(
+                calendarIndex: 1,
+                year: year,
+                day: day
+            );
+        }
+
+
+        public async Task SelectExperitionDateFromCalendarAsync(
+      string year,
+      string day)
+        {
+            await _baseListPage.SelectMuiDateFromCalendarAsync(
+                calendarIndex: 2,
+                year: year,
+                day: day
+            );
+        }
+
+
+
 
         public async Task FillExpirationDateAsync(string dateValue)
             => await _baseListPage.FillDateFieldAsync("Expiration Date", dateValue);
