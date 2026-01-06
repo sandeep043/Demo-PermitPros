@@ -36,7 +36,14 @@ namespace AutomationPermitPros.Pages.Base
         protected ILocator confirmButton =>
             _page.GetByRole(AriaRole.Button, new() { Name = "Delete" });
 
+        protected ILocator Adv_SaveButton =>
+            _page.GetByRole(AriaRole.Button, new() { Name = "Save" });
 
+        protected ILocator EditIconButton =>
+            _page.Locator("button[aria-label='Edit']"); 
+
+        protected ILocator ViewIconButton =>
+            _page.Locator("button[aria-label='View Details']");
 
 
 
@@ -268,6 +275,34 @@ namespace AutomationPermitPros.Pages.Base
             }
 
         }
+        public async Task<bool> Click_EditIcon()
+        {
+
+            try
+            {
+                await EditIconButton.ClickAsync();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+
+        }
+        public async Task<bool> Click_ViewIcon()
+        {
+
+            try
+            {
+                await ViewIconButton.ClickAsync();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+
+        }
 
         public async Task<bool> Adv_Delete()
         {
@@ -283,6 +318,20 @@ namespace AutomationPermitPros.Pages.Base
                 return false;
             }
         }
+        public async Task<bool> Adv_Save()
+        {
+            try
+            {
+
+                await Adv_SaveButton.ClickAsync();
+                await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
     }
-    }
+}
 

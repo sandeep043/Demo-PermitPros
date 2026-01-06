@@ -52,6 +52,8 @@ namespace AutomationPermitPros.Pages
         private ILocator EscrowStatusIdInput => _page.GetByPlaceholder("Enter Escrow Status ID");
         private ILocator PrevEscrowStatusIdInput => _page.GetByPlaceholder("Enter Prev Escrow Status ID");
 
+      
+
         public async Task<bool> IsListPageLoaded()
         {
             return await PageHeader.IsVisibleAsync();
@@ -445,6 +447,20 @@ namespace AutomationPermitPros.Pages
         public async Task<bool> BUSLIC_Adv_Delete()
         {
             return await _baseListPage.Adv_Delete();
+        }
+        public async Task<bool> BUSLIC_Adv_Save()
+        {
+            return await _baseListPage.Adv_Save();
+        }
+
+        public async Task<bool> BUSLIC_Click_EditIcon()
+        {
+            return await _baseListPage.Click_EditIcon();
+        }
+
+        public async Task<bool> BUSLIC_Click_ViewIcon()
+        {
+            return await _baseListPage.Click_ViewIcon();
         }
 
         public async Task<string> ExportToExcel()
