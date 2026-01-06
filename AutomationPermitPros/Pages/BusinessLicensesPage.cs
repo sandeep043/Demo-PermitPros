@@ -458,5 +458,25 @@ namespace AutomationPermitPros.Pages
             return await _baseListPage.SortByLabelAsync(columnLabel, ascending);
         }
 
+        public async Task<bool> BUSLIC_IsDeleteModelVisible()
+        {
+            return await _baseListPage.IsDeleteModalVisible();
+        }
+
+        public async Task<bool> BUSLIC_EnterDeletionReason(string reason)
+        {
+            return await _baseListPage.EnterDeletionReason(reason);
+        }
+
+        public async Task<bool> BUSLIC_ConfirmDelete()
+        {
+                  return await _baseListPage.ConfirmDelete();
+        }
+
+
+        public async Task<bool> BUSLIC_CancelDelete()
+        {
+            return await _baseListPage.CancelDelete();
+        }
     }
 }

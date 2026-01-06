@@ -1,5 +1,6 @@
 ﻿using AutomationPermitPros.AutomationBlocks;
 using AutomationPermitPros.Config;
+using AutomationPermitPros.Pages;
 using Microsoft.Playwright;
 using System;
 using System.Collections.Generic;
@@ -122,7 +123,7 @@ namespace AutomationPermitPros.Tests
         [Test]
         public async Task BusinessLicenses_CreateNewBussinessLicenseAndDeleteLicenseBySearch_()
         {
-            
+
             var sideBar = new SidebarNavigationBlock(_page);
             var navigationResult = await sideBar.NavigateToAsync("Business Licenses");
             //Click on Create New Business License button 
@@ -149,6 +150,54 @@ namespace AutomationPermitPros.Tests
             await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
             await _page.WaitForTimeoutAsync(2000);
 
+        }
+
+
+        [Test]
+        [Category("Delete")]
+        [Description("Delete business license withentering reason")]
+        public async Task DeleteBusinessLicense_WithtReason_ShouldDeleteSuccessfully()
+        {
+            var BusinesslicensesBLock = new BusinesslicensesBLocks(_page);
+            //Arrange
+            string deletionReason = "Testing deletion functionality";
+            string locationName = "uganda";
+            string licenseNumber = "12345";
+
+
+            var sideBar = new SidebarNavigationBlock(_page);
+            var navigationResult = await sideBar.NavigateToAsync("Business Licenses");
+
+            //Enter Location Name and License Number and click on search button 
+            var enterLocationNameResult = await BusinesslicensesBLock.BUSLIC_ENTER_LOCATIONNAME(locationName);
+            var enterLicenseNumberResult = await BusinesslicensesBLock.BUSLIC_ENTER_LICENSENUMBER(licenseNumber);
+            var searchButtonResult = await BusinesslicensesBLock.BUSLIC_SEARCHBUTTON();
+
+            // set Network Idle timeout to 10 seconds    
+            await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+            await _page.WaitForTimeoutAsync(2000);
+
+            // Act
+            var result = await BusinesslicensesBLock.BUSLIC_Block_DeleteWithReason(deletionReason) ;
+
+            // Assert
+            Assert.IsTrue(result, "Failed to delete business license without reason");
+
+            // Wait for deletion to complete
+            await _page.WaitForTimeoutAsync(2000);
+
+            // Verify deletion by searching again
+            await BusinesslicensesBLock.BUSLIC_ENTER_LOCATIONNAME(locationName);
+            await BusinesslicensesBLock.BUSLIC_ENTER_LICENSENUMBER(licenseNumber);
+            await BusinesslicensesBLock.BUSLIC_SEARCHBUTTON();
+            await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+            await _page.WaitForTimeoutAsync(2000);
+
+            // Verify the record no longer exists
+            var recordExistsAfterDelete = await BusinesslicensesBLock.BUSLIC_VerifySearchResultExists(licenseNumber);
+            Assert.IsFalse(recordExistsAfterDelete, $"License {licenseNumber} should NOT exist after deletion");
+
+            Console.WriteLine($"Test Passed: License {licenseNumber} successfully deleted and verified");
         }
 
     }
