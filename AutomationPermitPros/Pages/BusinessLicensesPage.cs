@@ -38,6 +38,8 @@ namespace AutomationPermitPros.Pages
         private ILocator AgencySelectInput => _page.GetByRole(AriaRole.Combobox, new() { Name = "Default select example" }).Nth(1);
         private ILocator LicenseTypeSelectInput => _page.GetByRole(AriaRole.Combobox, new() { Name = "Default select example" }).Nth(2);
 
+        private ILocator EditLicenseTypeSelectInput => _page.Locator("#react-select-4-input");
+
         // State <select> as combobox
         private ILocator StateDropdown => _page.GetByRole(AriaRole.Combobox, new() { Name = "State" });
 
@@ -51,6 +53,8 @@ namespace AutomationPermitPros.Pages
 
         private ILocator EscrowStatusIdInput => _page.GetByPlaceholder("Enter Escrow Status ID");
         private ILocator PrevEscrowStatusIdInput => _page.GetByPlaceholder("Enter Prev Escrow Status ID");
+
+      
 
         public async Task<bool> IsListPageLoaded()
         {
@@ -88,6 +92,8 @@ namespace AutomationPermitPros.Pages
             // 1️⃣ Open dropdown
             await select.ClickAsync();
 
+            await select.WaitForAsync(new() { Timeout = 2000 });
+
             // 2️⃣ Type filter text
             await select.FillAsync(optionLabel);
 
@@ -97,7 +103,7 @@ namespace AutomationPermitPros.Pages
                 new() { Name = optionLabel }
             );
 
-            await option.WaitForAsync(new() { Timeout = 5000 });
+            await option.WaitForAsync(new() { Timeout = 2000 });
 
             // 4️⃣ Click the option explicitly
             await option.ClickAsync();
@@ -124,6 +130,31 @@ namespace AutomationPermitPros.Pages
 
             if (await input.CountAsync() == 0)
                 throw new Exception("Location select input not found.");
+
+            // 1️⃣ Open dropdown
+            await input.ClickAsync();
+
+            // 2️⃣ Type filter text
+            await input.FillAsync(locationLabel);
+
+            // 3️⃣ WAIT for at least one option to appear (CRITICAL)
+            var firstOption = _page.GetByRole(AriaRole.Option).First;
+
+            await firstOption.WaitForAsync(new() { Timeout = 5000 });
+
+            // 4️⃣ Click first option explicitly
+            await firstOption.ClickAsync();
+
+            // 5️⃣ Verify selection actually happened
+            var selectedValue = await input.InputValueAsync();
+            if (string.IsNullOrWhiteSpace(selectedValue))
+                throw new Exception("Location was not selected.");
+        }
+
+        public async Task EditSelectLocationAsync(string locationLabel)
+        {
+            var input = EditLicenseTypeSelectInput;
+
 
             // 1️⃣ Open dropdown
             await input.ClickAsync();
@@ -445,6 +476,20 @@ namespace AutomationPermitPros.Pages
         public async Task<bool> BUSLIC_Adv_Delete()
         {
             return await _baseListPage.Adv_Delete();
+        }
+        public async Task<bool> BUSLIC_Adv_Save()
+        {
+            return await _baseListPage.Adv_Save();
+        }
+
+        public async Task<bool> BUSLIC_Click_EditIcon()
+        {
+            return await _baseListPage.Click_EditIcon();
+        }
+
+        public async Task<bool> BUSLIC_Click_ViewIcon()
+        {
+            return await _baseListPage.Click_ViewIcon();
         }
 
         public async Task<string> ExportToExcel()

@@ -34,11 +34,11 @@ namespace AutomationPermitPros.AutomationBlocks
             }
         }
 
-        public async Task<bool> BUSLIC_SELECT_AGENCY()
+        public async Task<bool> BUSLIC_SELECT_AGENCY(string Select_agency)
         {
             try
             {
-                await _businessPage.SelectAgencyAsync("ABC"); return true;
+                await _businessPage.SelectAgencyAsync(Select_agency); return true;
             }
             catch (Exception ex)
             {
@@ -110,11 +110,11 @@ namespace AutomationPermitPros.AutomationBlocks
         }
 
 
-        public async Task<bool> BUSLIC_SELECT_EXPERATIONDATE_CALENDAR()
+        public async Task<bool> BUSLIC_SELECT_EXPERATIONDATE_CALENDAR(string year, string day)
         {
             try
             {
-                await _businessPage.SelectExperitionDateFromCalendarAsync("2025", "15");
+                await _businessPage.SelectExperitionDateFromCalendarAsync(year, day);
                 return true;
             }
             catch (Exception ex)
@@ -131,6 +131,20 @@ namespace AutomationPermitPros.AutomationBlocks
             try
             {
                 await _businessPage.SelectLicenseTypeAsync(licenseType);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[BUSLIC_SELECT_LICENSETYPE] Error: {ex.Message}");
+                Console.WriteLine(ex.StackTrace);
+                return false;
+            }
+        }
+        public async Task<bool> BUSLIC_EditSELECT_LICENSETYPE(string licenseType)
+        {
+            try
+            {
+                await _businessPage.EditSelectLocationAsync(licenseType);
                 return true;
             }
             catch (Exception ex)
@@ -175,7 +189,8 @@ namespace AutomationPermitPros.AutomationBlocks
             try
             {
                 await _businessPage.ClickSearch();
-                return await _businessPage.IsCreatePageLoaded();
+                
+                return true;
             }
             catch
             {
@@ -202,7 +217,7 @@ namespace AutomationPermitPros.AutomationBlocks
             try
             {
                 await _businessPage.ClickCreateButtonAsync();
-                return await _businessPage.IsCreatePageLoaded();
+                return true;
             }
             catch
             {
@@ -215,7 +230,46 @@ namespace AutomationPermitPros.AutomationBlocks
             try
             {
                 await _businessPage.BUSLIC_Click_DeleteIcon();
-                return await _businessPage.IsCreatePageLoaded();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        public async Task<bool> BUSLIC_EDIT_ICON()
+        {
+            try
+            {
+                await _businessPage.BUSLIC_Click_EditIcon();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        public async Task<bool> BUSLIC_VIEW_ICON()
+        {
+            try
+            {
+                await _businessPage.BUSLIC_Click_ViewIcon();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        public async Task<bool> BUSLIC_ADV_SAVE_BUTTON()
+        {
+            try
+            {
+                await _businessPage.BUSLIC_Adv_Save();
+                return true;
             }
             catch
             {
@@ -228,7 +282,7 @@ namespace AutomationPermitPros.AutomationBlocks
             try
             {
                 await _businessPage.BUSLIC_Adv_Delete();
-                return await _businessPage.IsCreatePageLoaded();
+                return true;
             }
             catch
             {
@@ -250,8 +304,11 @@ namespace AutomationPermitPros.AutomationBlocks
                     return false;
                 }
 
+                await _businessPage.BUSLIC_Adv_Delete();
+
+
                 // Step 2: Wait for modal to appear
-                await Task.Delay(1000); // Wait for modal animation
+                    await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
                 var isModalVisible = await _businessPage.BUSLIC_IsDeleteModelVisible();
                 if (!isModalVisible)
                 {

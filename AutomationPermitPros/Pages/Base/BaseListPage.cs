@@ -36,8 +36,15 @@ namespace AutomationPermitPros.Pages.Base
         protected ILocator Adv_DeleteButton =>
             _page.GetByRole(AriaRole.Button, new() { Name = "Delete" });
 
+        protected ILocator Adv_SaveButton =>
+            _page.GetByRole(AriaRole.Button, new () { Name = "Save", Exact = true });
         protected ILocator CancelButton => _page.GetByRole(AriaRole.Button, new() { Name = "Cancel" });
 
+        protected ILocator EditIconButton =>
+            _page.Locator("button[aria-label='Edit']"); 
+
+        protected ILocator ViewIconButton =>
+            _page.Locator("button[aria-label='View Details']");
         protected ILocator DeleteReasonTextarea => _page.GetByRole(AriaRole.Textbox);
 
         protected ILocator DeleteModalMessage => _page.GetByText("There is no associated information");
@@ -274,6 +281,34 @@ namespace AutomationPermitPros.Pages.Base
             }
 
         }
+        public async Task<bool> Click_EditIcon()
+        {
+
+            try
+            {
+                await EditIconButton.ClickAsync();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+
+        }
+        public async Task<bool> Click_ViewIcon()
+        {
+
+            try
+            {
+                await ViewIconButton.ClickAsync();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+
+        }
 
         public async Task<bool> Adv_Delete()
         {
@@ -323,6 +358,20 @@ namespace AutomationPermitPros.Pages.Base
             catch (Exception ex)
             {
                 Console.WriteLine($"Error entering deletion reason: {ex.Message}");
+                return false;
+            }
+        }
+        public async Task<bool> Adv_Save()
+        {
+            try
+            {
+
+                await Adv_SaveButton.ClickAsync();
+                //await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+                return true;
+            }
+            catch
+            {
                 return false;
             }
         }
