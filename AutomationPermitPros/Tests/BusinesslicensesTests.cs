@@ -52,15 +52,6 @@ namespace AutomationPermitPros.Tests
             _playwright?.Dispose();
         }
 
-        //[Test]
-        //public async Task LoginTest()
-        //{
-        //    var context = await _browser.NewContextAsync();
-        //    var page = await context.NewPageAsync();
-        //    var loginBlock = new LoginBlock(page);
-        //    var Result = await loginBlock.LOGIN();
-
-        //}
 
         [Test]
         public async Task BusinessLicenses_SearchWithLocationNameLicenseNumber()
@@ -74,7 +65,7 @@ namespace AutomationPermitPros.Tests
             //Enter Location Name and License Number and click on search button 
             var BusinesslicensesBLock = new BusinesslicensesBLocks(_page);
             var enterLocationNameResult = await BusinesslicensesBLock.BUSLIC_ENTER_LOCATIONNAME("uganda");
-            var enterLicenseNumberResult = await BusinesslicensesBLock.BUSLIC_ENTER_LICENSENUMBER("12355");
+            var enterLicenseNumberResult = await BusinesslicensesBLock.BUSLIC_ENTER_LICENSENUMBER("LIC12345678");
             var searchButtonResult = await BusinesslicensesBLock.BUSLIC_SEARCHBUTTON();
 
             // set Network Idle timeout to 10 seconds    
@@ -99,7 +90,7 @@ namespace AutomationPermitPros.Tests
             //var enterLocationNumberResult = await BusinesslicensesBLock.BUSLIC_ENTER_LOCATIONNUMBER("001");
             var selectLocationResult = await BusinesslicensesBLock.BUSLIC_SELECT_LOCATION("uganda");
             //var enterLocationNameResult = await BusinesslicensesBLock.BUSLIC_ENTER_LOCATIONNAME("Test Location");
-            var enterLicenseNumberResult = await BusinesslicensesBLock.BUSLIC_ENTER_LICENSENUMBER("LIC12345678");
+            var enterLicenseNumberResult = await BusinesslicensesBLock.BUSLIC_ENTER_LICENSENUMBER("BBC18");
             var selectLicenseTypeResult = await BusinesslicensesBLock.BUSLIC_SELECT_LICENSETYPE("Beer");
             var selectRenewalDateResult =
              await BusinesslicensesBLock
@@ -133,14 +124,14 @@ namespace AutomationPermitPros.Tests
             //Enter Location Name and License Number and click on search button 
 
             var enterLocationNameResult = await BusinesslicensesBLock.BUSLIC_ENTER_LOCATIONNAME("uganda");
-            var enterLicenseNumberResult = await BusinesslicensesBLock.BUSLIC_ENTER_LICENSENUMBER("12355");
+            var enterLicenseNumberResult = await BusinesslicensesBLock.BUSLIC_ENTER_LICENSENUMBER("BBC18");
             await _page.WaitForTimeoutAsync(2000);
             await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
             var searchButtonResult = await BusinesslicensesBLock.BUSLIC_SEARCHBUTTON();
             await _page.WaitForTimeoutAsync(2000);
             await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
             var EditIconResult = await BusinesslicensesBLock.BUSLIC_EDIT_ICON();
-            var EditSelectLicenseType = await BusinesslicensesBLock.BUSLIC_EditSELECT_LICENSETYPE("Beer");
+            var EditSelectLicenseType = await BusinesslicensesBLock.BUSLIC_EditSELECT_LICENSETYPE("Elevator");
             var EditSaveButton = await BusinesslicensesBLock.BUSLIC_ADV_SAVE_BUTTON();
             await _page.WaitForTimeoutAsync(2000);
 
@@ -159,12 +150,16 @@ namespace AutomationPermitPros.Tests
 
             //Enter Location Name and License Number and click on search button 
 
-            //var enterLocationNameResult = await BusinesslicensesBLock.BUSLIC_ENTER_LOCATIONNAME("uganda");
-            var enterLicenseNumberResult = await BusinesslicensesBLock.BUSLIC_ENTER_LICENSENUMBER("12344");
+            var enterLocationNameResult = await BusinesslicensesBLock.BUSLIC_ENTER_LOCATIONNAME("uganda");
+            var enterLicenseNumberResult = await BusinesslicensesBLock.BUSLIC_ENTER_LICENSENUMBER("LIC12345678");
+            await _page.WaitForTimeoutAsync(2000);
+            await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
             var searchButtonResult = await BusinesslicensesBLock.BUSLIC_SEARCHBUTTON();
 
+            await _page.WaitForTimeoutAsync(2000);
+            await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
             var EditIconResult = await BusinesslicensesBLock.BUSLIC_VIEW_ICON();
-
+            await _page.WaitForTimeoutAsync(10000);
 
         }
 
@@ -178,7 +173,7 @@ namespace AutomationPermitPros.Tests
             //Arrange
             string deletionReason = "Testing deletion functionality";
             string locationName = "uganda";
-            string licenseNumber = "12355";
+            string licenseNumber = "BBC18";
 
 
             var sideBar = new SidebarNavigationBlock(_page);
@@ -214,9 +209,7 @@ namespace AutomationPermitPros.Tests
             // Verify the record no longer exists
             var recordExistsAfterDelete = await BusinesslicensesBLock.BUSLIC_VerifySearchResultExists(licenseNumber);
             Assert.IsFalse(recordExistsAfterDelete, $"License {licenseNumber} should NOT exist after deletion");
-
             Console.WriteLine($"Test Passed: License {licenseNumber} successfully deleted and verified");
         }
-
     }
 }
