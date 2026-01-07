@@ -27,7 +27,7 @@ namespace AutomationPermitPros.Pages
         public async Task NavigateToLogin(string url)
         {
             await _page.GotoAsync(url);
-            await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+            //await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
         }
         public async Task EnterEmail(string email)
         {
@@ -43,7 +43,7 @@ namespace AutomationPermitPros.Pages
         public async Task ClickLogin()
         {
             await LoginButton.ClickAsync();
-            await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+            //await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
         }
 
 
