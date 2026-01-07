@@ -38,6 +38,8 @@ namespace AutomationPermitPros.Pages
         private ILocator AgencySelectInput => _page.GetByRole(AriaRole.Combobox, new() { Name = "Default select example" }).Nth(1);
         private ILocator LicenseTypeSelectInput => _page.GetByRole(AriaRole.Combobox, new() { Name = "Default select example" }).Nth(2);
 
+        private ILocator EditLicenseTypeSelectInput => _page.Locator("#react-select-4-input");
+
         // State <select> as combobox
         private ILocator StateDropdown => _page.GetByRole(AriaRole.Combobox, new() { Name = "State" });
 
@@ -90,6 +92,8 @@ namespace AutomationPermitPros.Pages
             // 1️⃣ Open dropdown
             await select.ClickAsync();
 
+            await select.WaitForAsync(new() { Timeout = 2000 });
+
             // 2️⃣ Type filter text
             await select.FillAsync(optionLabel);
 
@@ -99,7 +103,7 @@ namespace AutomationPermitPros.Pages
                 new() { Name = optionLabel }
             );
 
-            await option.WaitForAsync(new() { Timeout = 5000 });
+            await option.WaitForAsync(new() { Timeout = 2000 });
 
             // 4️⃣ Click the option explicitly
             await option.ClickAsync();
@@ -126,6 +130,31 @@ namespace AutomationPermitPros.Pages
 
             if (await input.CountAsync() == 0)
                 throw new Exception("Location select input not found.");
+
+            // 1️⃣ Open dropdown
+            await input.ClickAsync();
+
+            // 2️⃣ Type filter text
+            await input.FillAsync(locationLabel);
+
+            // 3️⃣ WAIT for at least one option to appear (CRITICAL)
+            var firstOption = _page.GetByRole(AriaRole.Option).First;
+
+            await firstOption.WaitForAsync(new() { Timeout = 5000 });
+
+            // 4️⃣ Click first option explicitly
+            await firstOption.ClickAsync();
+
+            // 5️⃣ Verify selection actually happened
+            var selectedValue = await input.InputValueAsync();
+            if (string.IsNullOrWhiteSpace(selectedValue))
+                throw new Exception("Location was not selected.");
+        }
+
+        public async Task EditSelectLocationAsync(string locationLabel)
+        {
+            var input = EditLicenseTypeSelectInput;
+
 
             // 1️⃣ Open dropdown
             await input.ClickAsync();
@@ -474,5 +503,25 @@ namespace AutomationPermitPros.Pages
             return await _baseListPage.SortByLabelAsync(columnLabel, ascending);
         }
 
+        public async Task<bool> BUSLIC_IsDeleteModelVisible()
+        {
+            return await _baseListPage.IsDeleteModalVisible();
+        }
+
+        public async Task<bool> BUSLIC_EnterDeletionReason(string reason)
+        {
+            return await _baseListPage.EnterDeletionReason(reason);
+        }
+
+        public async Task<bool> BUSLIC_ConfirmDelete()
+        {
+                  return await _baseListPage.ConfirmDelete();
+        }
+
+
+        public async Task<bool> BUSLIC_CancelDelete()
+        {
+            return await _baseListPage.CancelDelete();
+        }
     }
 }

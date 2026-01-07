@@ -28,23 +28,29 @@ namespace AutomationPermitPros.Pages.Base
             _page.GetByRole(AriaRole.Button, new() { Name = "Export to Excel" });
 
 
-        protected ILocator DeleteIconButton =>
+        protected ILocator Model_DeleteIconButton =>
             _page.Locator("button[aria-label='Delete']");
 
 
 
-        protected ILocator confirmButton =>
+        protected ILocator Adv_DeleteButton =>
             _page.GetByRole(AriaRole.Button, new() { Name = "Delete" });
 
         protected ILocator Adv_SaveButton =>
-            _page.GetByRole(AriaRole.Button, new() { Name = "Save" });
+            _page.GetByRole(AriaRole.Button, new () { Name = "Save", Exact = true });
+        protected ILocator CancelButton => _page.GetByRole(AriaRole.Button, new() { Name = "Cancel" });
 
         protected ILocator EditIconButton =>
             _page.Locator("button[aria-label='Edit']"); 
 
         protected ILocator ViewIconButton =>
             _page.Locator("button[aria-label='View Details']");
+        protected ILocator DeleteReasonTextarea => _page.GetByRole(AriaRole.Textbox);
 
+        protected ILocator DeleteModalMessage => _page.GetByText("There is no associated information");
+
+        private ILocator DeleteConfirmButton => _page.GetByRole(AriaRole.Button, new() { Name = "Delete" });
+        private ILocator DeleteModalTitle => _page.GetByText("Delete Business License");
 
 
         public async Task ClickCreateNew()
@@ -266,7 +272,7 @@ namespace AutomationPermitPros.Pages.Base
 
             try
             {
-                await DeleteIconButton.ClickAsync();
+                await Model_DeleteIconButton.ClickAsync();
                 return true;
             }
             catch
@@ -309,12 +315,49 @@ namespace AutomationPermitPros.Pages.Base
             try
             {
 
-                await confirmButton.ClickAsync();
+                await Adv_DeleteButton.ClickAsync();
                 await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
                 return true;
             }
             catch
             {
+                return false;
+            }
+        }
+
+        //public async Task EnterDeletionReason(string reason)
+        //{
+        //    await DeleteReasonTextarea.FillAsync(reason); 
+        //}
+
+
+        public async Task<bool> IsDeleteModalVisible()
+        {
+            try
+            {
+                await DeleteModalTitle.WaitForAsync(new LocatorWaitForOptions
+                {
+                    State = WaitForSelectorState.Visible,
+                    Timeout = 5000
+                });
+                return await DeleteModalTitle.IsVisibleAsync();
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        public async Task<bool> EnterDeletionReason(string reason)
+        {
+            try
+            {
+                await DeleteReasonTextarea.FillAsync(reason);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error entering deletion reason: {ex.Message}");
                 return false;
             }
         }
@@ -324,7 +367,7 @@ namespace AutomationPermitPros.Pages.Base
             {
 
                 await Adv_SaveButton.ClickAsync();
-                await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+                //await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
                 return true;
             }
             catch
@@ -332,6 +375,45 @@ namespace AutomationPermitPros.Pages.Base
                 return false;
             }
         }
+
+        // Click confirm delete button in modal...
+        public async Task<bool> ConfirmDelete()
+        {
+            try
+            {
+                await DeleteConfirmButton.ClickAsync();
+                await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error confirming delete: {ex.Message}");
+                return false;
+            }
+        }
+
+        // Click cancel button in modal
+        public async Task<bool> CancelDelete()
+        {
+            try
+            {
+                await CancelButton.ClickAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error canceling delete: {ex.Message}");
+                return false;
+            }
+        }
+
+
+
+
+
+
+
+
     }
 }
 

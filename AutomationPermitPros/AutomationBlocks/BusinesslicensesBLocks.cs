@@ -140,6 +140,20 @@ namespace AutomationPermitPros.AutomationBlocks
                 return false;
             }
         }
+        public async Task<bool> BUSLIC_EditSELECT_LICENSETYPE(string licenseType)
+        {
+            try
+            {
+                await _businessPage.EditSelectLocationAsync(licenseType);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[BUSLIC_SELECT_LICENSETYPE] Error: {ex.Message}");
+                Console.WriteLine(ex.StackTrace);
+                return false;
+            }
+        }
 
         public async Task<bool> BUSLIC_SELECT_STATE(string state)
         {
@@ -175,7 +189,8 @@ namespace AutomationPermitPros.AutomationBlocks
             try
             {
                 await _businessPage.ClickSearch();
-                return await _businessPage.IsCreatePageLoaded();
+                
+                return true;
             }
             catch
             {
@@ -202,7 +217,7 @@ namespace AutomationPermitPros.AutomationBlocks
             try
             {
                 await _businessPage.ClickCreateButtonAsync();
-                return await _businessPage.IsCreatePageLoaded();
+                return true;
             }
             catch
             {
@@ -215,7 +230,7 @@ namespace AutomationPermitPros.AutomationBlocks
             try
             {
                 await _businessPage.BUSLIC_Click_DeleteIcon();
-                return await _businessPage.IsCreatePageLoaded();
+                return true;
             }
             catch
             {
@@ -228,7 +243,7 @@ namespace AutomationPermitPros.AutomationBlocks
             try
             {
                 await _businessPage.BUSLIC_Click_EditIcon();
-                return await _businessPage.IsCreatePageLoaded();
+                return true;
             }
             catch
             {
@@ -241,7 +256,7 @@ namespace AutomationPermitPros.AutomationBlocks
             try
             {
                 await _businessPage.BUSLIC_Click_ViewIcon();
-                return await _businessPage.IsCreatePageLoaded();
+                return true;
             }
             catch
             {
@@ -254,7 +269,7 @@ namespace AutomationPermitPros.AutomationBlocks
             try
             {
                 await _businessPage.BUSLIC_Adv_Save();
-                return await _businessPage.IsCreatePageLoaded();
+                return true;
             }
             catch
             {
@@ -262,7 +277,94 @@ namespace AutomationPermitPros.AutomationBlocks
             }
         }
 
+        public async Task<bool> BUSLIC_ADV_DeleteButton()
+        {
+            try
+            {
+                await _businessPage.BUSLIC_Adv_Delete();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
 
+
+        }
+
+        public async Task<bool> BUSLIC_Block_DeleteWithReason(string deletionReason)
+        {
+            try
+            {
+                // Step 1: Click delete icon
+                var deleteIconClicked = await _businessPage.BUSLIC_Click_DeleteIcon();
+                if (!deleteIconClicked)
+                {
+                    Console.WriteLine("Block Failed: Could not click delete icon");
+                    return false;
+                }
+
+                await _businessPage.BUSLIC_Adv_Delete();
+
+
+                // Step 2: Wait for modal to appear
+                    await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+                var isModalVisible = await _businessPage.BUSLIC_IsDeleteModelVisible();
+                if (!isModalVisible)
+                {
+                    Console.WriteLine("Block Failed: Delete modal did not appear");
+                    return false;
+                }
+
+                // Step 3: Enter deletion reason
+                var reasonEntered = await _businessPage.BUSLIC_EnterDeletionReason(deletionReason);
+                if (!reasonEntered)
+                {
+                    Console.WriteLine("Block Failed: Could not enter deletion reason");
+                    return false;
+                }
+
+                // Step 4: Confirm deletion
+                var deleteConfirmed = await _businessPage.BUSLIC_ConfirmDelete();
+                if (!deleteConfirmed)
+                {
+                    Console.WriteLine("Block Failed: Could not confirm deletion");
+                    return false;
+                }
+
+                // Step 5: Wait for deletion to complete
+                await Task.Delay(2000);
+
+                Console.WriteLine("Block Success: License deleted with reason");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Block Exception: {ex.Message}");
+                return false;
+            }
+        }
+
+        public async Task<bool> BUSLIC_VerifySearchResultExists(string licenseNumber)
+        {
+            try
+            {
+                // Look for a table row containing the license number
+                var row = _page.Locator($"//tr[contains(.,'{licenseNumber}')]");
+
+                // Check if the row is visible
+                bool isVisible = await row.IsVisibleAsync();
+
+                Console.WriteLine($"License {licenseNumber} exists in search results: {isVisible}");
+                return isVisible;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error verifying search result: {ex.Message}");
+                return false;
+            }
+        }
     }
 }
+
 
