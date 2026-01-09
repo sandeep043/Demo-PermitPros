@@ -75,9 +75,11 @@ namespace AutomationPermitPros.Tests
 
             //select Business Licenses from left menu 
             var sideBar = new SidebarNavigationBlock(_page);
+           
             var navigationResult = await sideBar.NavigateToAsync("Business Licenses");
+            Assert.IsTrue(navigationResult, "Navigation to Business Licenses failed.");
 
-          
+
             //Enter Location Name and License Number and click on search button 
             var BusinesslicensesBLock = new BusinesslicensesBLocks(_page);
             await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
@@ -86,10 +88,18 @@ namespace AutomationPermitPros.Tests
             await screenShorts.CaptureScreenshotAsync("BusinessLicenses_BeforeSearch");
 
             var enterLocationNameResult = await BusinesslicensesBLock.BUSLIC_ENTER_LOCATIONNAME("uganda");
-            var enterLicenseNumberResult = await BusinesslicensesBLock.BUSLIC_ENTER_LICENSENUMBER("LIC12345678");
+
+            Assert.IsTrue(enterLocationNameResult, $"Failed to enter location name:");
+
+            var enterLicenseNumberResult = await BusinesslicensesBLock.BUSLIC_ENTER_LICENSENUMBER("LIC12345678"); 
+
+            Assert.IsTrue(enterLicenseNumberResult, $"Failed to enter license number:");
+
+
             await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
             await _page.WaitForTimeoutAsync(2000);
-            var searchButtonResult = await BusinesslicensesBLock.BUSLIC_SEARCHBUTTON();
+            var searchButtonResult = await BusinesslicensesBLock.BUSLIC_SEARCHBUTTON(); 
+            Assert.IsTrue(searchButtonResult, "Search button click failed.");   
 
             // set Network Idle timeout to 10 seconds    
             await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
@@ -107,6 +117,9 @@ namespace AutomationPermitPros.Tests
             var screenShorts = new ScreenShorts(_page);
             var sideBar = new SidebarNavigationBlock(_page);
             var navigationResult = await sideBar.NavigateToAsync("Business Licenses");
+
+            Assert.IsTrue(navigationResult, "Navigation to Business Licenses failed.");
+
             //Click on Create New Business License button 
             var BusinesslicensesBLock = new BusinesslicensesBLocks(_page);
 
@@ -120,9 +133,17 @@ namespace AutomationPermitPros.Tests
             //Enter Location Number, Location Name , License Number , select License Type , State from dropdowns and click on Save button
             //var enterLocationNumberResult = await BusinesslicensesBLock.BUSLIC_ENTER_LOCATIONNUMBER("001");
             var selectLocationResult = await BusinesslicensesBLock.BUSLIC_SELECT_LOCATION("uganda");
+
+            Assert.IsTrue(selectLocationResult, "Failed to select location.");
             //var enterLocationNameResult = await BusinesslicensesBLock.BUSLIC_ENTER_LOCATIONNAME("Test Location");
             var enterLicenseNumberResult = await BusinesslicensesBLock.BUSLIC_ENTER_LICENSENUMBER("BBC18");
+
+            Assert.IsTrue(enterLicenseNumberResult, "Failed to enter license number.");
+
             var selectLicenseTypeResult = await BusinesslicensesBLock.BUSLIC_SELECT_LICENSETYPE("Beer");
+
+            Assert.IsTrue(selectLicenseTypeResult, "Failed to select license type.");
+
             var selectRenewalDateResult =
              await BusinesslicensesBLock
             .BUSLIC_SELECT_RENEWALDATE_CALENDAR(
@@ -130,18 +151,27 @@ namespace AutomationPermitPros.Tests
                 year: "2002",
                 day: "5"
         );
+            Assert.IsTrue(selectRenewalDateResult, "Failed to select renewal date.");
+
             var selectAgencyResult = await BusinesslicensesBLock.BUSLIC_SELECT_AGENCY("ABC");
+
+            Assert.IsTrue(selectAgencyResult, "Failed to select agency.");
+
             var selectExperationDateResult = await BusinesslicensesBLock.BUSLIC_SELECT_EXPERATIONDATE_CALENDAR(year: "2002",
                 day: "5");
 
+            Assert.IsTrue(selectExperationDateResult, "Failed to select expiration date.");
+
             //var selectStateResult = await BusinesslicensesBLock.BUSLIC_SELECT_STATE("California");
             var saveButtonResult = await BusinesslicensesBLock.BUSLIC_CREATE_BTN();
+
+            Assert.IsTrue(saveButtonResult, "Failed to click save button.");
 
             // set Network Idle timeout to 10 seconds       
             await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
             await _page.WaitForTimeoutAsync(1000);
             //screenshot before CreateNewBusinessLicense
-            await screenShorts.CaptureScreenshotAsync("BusinessLicenses_BeforeCreateNewBusinessLicense");
+            await screenShorts.CaptureScreenshotAsync("BusinessLicenses_AfterCreateNewBusinessLicense");
         }
 
 
@@ -151,6 +181,9 @@ namespace AutomationPermitPros.Tests
             var screenShorts = new ScreenShorts(_page);
             var sideBar = new SidebarNavigationBlock(_page);
             var navigationResult = await sideBar.NavigateToAsync("Business Licenses");
+
+            Assert.IsTrue(navigationResult, "Navigation to Business Licenses failed.");
+
             //Click on Create New Business License button 
             var BusinesslicensesBLock = new BusinesslicensesBLocks(_page);
 
@@ -161,22 +194,39 @@ namespace AutomationPermitPros.Tests
             //Enter Location Name and License Number and click on search button 
 
             var enterLocationNameResult = await BusinesslicensesBLock.BUSLIC_ENTER_LOCATIONNAME("uganda");
+
+            Assert.IsTrue(enterLocationNameResult, "Failed to select location.");
+
+
+
             var enterLicenseNumberResult = await BusinesslicensesBLock.BUSLIC_ENTER_LICENSENUMBER("BBC18");
+
+            Assert.IsTrue(enterLicenseNumberResult,"Failed to select Location Number");
+
             await _page.WaitForTimeoutAsync(2000);
             await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
             var searchButtonResult = await BusinesslicensesBLock.BUSLIC_SEARCHBUTTON();
+
+            Assert.IsTrue(searchButtonResult, "Faild to click on SearchButton");
+
+
             await _page.WaitForTimeoutAsync(2000);
             await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
             var EditIconResult = await BusinesslicensesBLock.BUSLIC_EDIT_ICON();
+
+            Assert.IsTrue(EditIconResult,"Failed to click on EditIcon button");
+
             var EditSelectLicenseType = await BusinesslicensesBLock.BUSLIC_EditSELECT_LICENSETYPE("Elevator");
+
+            Assert.IsTrue(EditSelectLicenseType, "Failed to Select the LicenceType");
+
             await screenShorts.CaptureScreenshotAsync("BusinessLicenses_AfterEditLicenses_types");
             var EditSaveButton = await BusinesslicensesBLock.BUSLIC_ADV_SAVE_BUTTON();
+            Assert.IsTrue(EditSaveButton, "failed to click on Save Button");
+
             await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
             await _page.WaitForTimeoutAsync(1000);
             await screenShorts.CaptureScreenshotAsync("BusinessLicenses_AfterEdit_Save");
-
-
-
         }
 
         [Test]
@@ -231,12 +281,21 @@ namespace AutomationPermitPros.Tests
 
             //Enter Location Name and License Number and click on search button 
             var enterLocationNameResult = await BusinesslicensesBLock.BUSLIC_ENTER_LOCATIONNAME(locationName);
+
+            Assert.IsTrue(enterLocationNameResult, "Failed to enter loaction Name");
+
             var enterLicenseNumberResult = await BusinesslicensesBLock.BUSLIC_ENTER_LICENSENUMBER(licenseNumber);
+
+            Assert.IsTrue(enterLicenseNumberResult, "Failed to enter license number.");
+
+
             await _page.WaitForTimeoutAsync(2000);
             await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
             var searchButtonResult = await BusinesslicensesBLock.BUSLIC_SEARCHBUTTON();
 
-            
+            Assert.IsTrue(searchButtonResult, "Search button click failed.");
+
+
             await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
             await _page.WaitForTimeoutAsync(1000);
             //screenshot before DeleteBusinessLicense
@@ -256,11 +315,19 @@ namespace AutomationPermitPros.Tests
 
             // Verify deletion by searching again
             await BusinesslicensesBLock.BUSLIC_ENTER_LOCATIONNAME(locationName);
+
+            Assert.IsTrue(enterLocationNameResult, "failed to enter loaction name");
+
             await BusinesslicensesBLock.BUSLIC_ENTER_LICENSENUMBER(licenseNumber);
+
+            Assert.IsTrue(enterLicenseNumberResult, "failed to enter license number."); 
+
             await BusinesslicensesBLock.BUSLIC_SEARCHBUTTON();
+
+            Assert.IsTrue(searchButtonResult, "Search button click failed.");
+
             await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
             await _page.WaitForTimeoutAsync(2000);
-       
 
             // Verify the record no longer exists
             var recordExistsAfterDelete = await BusinesslicensesBLock.BUSLIC_VerifySearchResultExists(licenseNumber);
