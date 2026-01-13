@@ -176,8 +176,6 @@ namespace AutomationPermitPros.Pages
             //    throw new Exception("Location was not selected.");
         }
 
-
-
         public async Task SelectAgencyAsync(string agencyLabel)
         {
             var input = AgencySelectInput;
