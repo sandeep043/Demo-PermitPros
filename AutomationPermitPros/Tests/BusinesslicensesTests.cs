@@ -1,6 +1,8 @@
 ﻿using AutomationPermitPros.AutomationBlocks;
 using AutomationPermitPros.Config;
+using AutomationPermitPros.Flows;
 using AutomationPermitPros.Pages;
+using AutomationPermitPros.Utilities;
 using Microsoft.Playwright;
 using System;
 using System.Collections.Generic;
@@ -58,7 +60,6 @@ namespace AutomationPermitPros.Tests
         }
 
 
-
         [TearDown]
         public async Task Teardown()
         {
@@ -67,272 +68,42 @@ namespace AutomationPermitPros.Tests
             _playwright?.Dispose();
         }
 
-
         [Test]
-        public async Task BusinessLicenses_SearchWithLocationNameLicenseNumber()
+        public async Task BusinessLicenses_Execute_From_Excel()
         {
-            var screenShorts = new ScreenShorts(_page);
-
-            //select Business Licenses from left menu 
+            // 1️⃣ Navigate once
             var sideBar = new SidebarNavigationBlock(_page);
-           
-            var navigationResult = await sideBar.NavigateToAsync("Business Licenses");
-            Assert.IsTrue(navigationResult, "Navigation to Business Licenses failed.");
-
-
-            //Enter Location Name and License Number and click on search button 
-            var BusinesslicensesBLock = new BusinesslicensesBLocks(_page);
-            await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
-            await _page.WaitForTimeoutAsync(2000);
-            //screenshot before search
-            await screenShorts.CaptureScreenshotAsync("BusinessLicenses_BeforeSearch");
-
-            var enterLocationNameResult = await BusinesslicensesBLock.BUSLIC_ENTER_LOCATIONNAME("uganda");
-
-            Assert.IsTrue(enterLocationNameResult, $"Failed to enter location name:");
-
-            var enterLicenseNumberResult = await BusinesslicensesBLock.BUSLIC_ENTER_LICENSENUMBER("LIC12345678"); 
-
-            Assert.IsTrue(enterLicenseNumberResult, $"Failed to enter license number:");
-
-
-            await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
-            await _page.WaitForTimeoutAsync(2000);
-            var searchButtonResult = await BusinesslicensesBLock.BUSLIC_SEARCHBUTTON(); 
-            Assert.IsTrue(searchButtonResult, "Search button click failed.");   
-
-            // set Network Idle timeout to 10 seconds    
-            await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
-            await _page.WaitForTimeoutAsync(2000);
-
-            //screenshot after search 
-            await screenShorts.CaptureScreenshotAsync("BusinessLicenses_AfterSearch");
-        }
-
-
-
-        [Test]
-        public async Task BusinessLicenses_CreateNewBusinessLicense_withRequiredFields()
-        {
-            var screenShorts = new ScreenShorts(_page);
-            var sideBar = new SidebarNavigationBlock(_page);
-            var navigationResult = await sideBar.NavigateToAsync("Business Licenses");
-
-            Assert.IsTrue(navigationResult, "Navigation to Business Licenses failed.");
-
-            //Click on Create New Business License button 
-            var BusinesslicensesBLock = new BusinesslicensesBLocks(_page);
-
-            await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
-            await _page.WaitForTimeoutAsync(2000);
-            //screenshot before CreateNewBusinessLicense
-            await screenShorts.CaptureScreenshotAsync("BusinessLicenses_BeforeCreateNewBusinessLicense");
-
-            var createNewButtonResult = await BusinesslicensesBLock.BUSLIC_CREATE_NEW();
-
-            //Enter Location Number, Location Name , License Number , select License Type , State from dropdowns and click on Save button
-            //var enterLocationNumberResult = await BusinesslicensesBLock.BUSLIC_ENTER_LOCATIONNUMBER("001");
-            var selectLocationResult = await BusinesslicensesBLock.BUSLIC_SELECT_LOCATION("uganda");
-
-            Assert.IsTrue(selectLocationResult, "Failed to select location.");
-            //var enterLocationNameResult = await BusinesslicensesBLock.BUSLIC_ENTER_LOCATIONNAME("Test Location");
-            var enterLicenseNumberResult = await BusinesslicensesBLock.BUSLIC_ENTER_LICENSENUMBER("BBC18");
-
-            Assert.IsTrue(enterLicenseNumberResult, "Failed to enter license number.");
-
-            var selectLicenseTypeResult = await BusinesslicensesBLock.BUSLIC_SELECT_LICENSETYPE("Beer");
-
-            Assert.IsTrue(selectLicenseTypeResult, "Failed to select license type.");
-
-            var selectRenewalDateResult =
-             await BusinesslicensesBLock
-            .BUSLIC_SELECT_RENEWALDATE_CALENDAR(
-                //month: "January",
-                year: "2002",
-                day: "5"
-        );
-            Assert.IsTrue(selectRenewalDateResult, "Failed to select renewal date.");
-
-            var selectAgencyResult = await BusinesslicensesBLock.BUSLIC_SELECT_AGENCY("ABC");
-
-            Assert.IsTrue(selectAgencyResult, "Failed to select agency.");
-
-            var selectExperationDateResult = await BusinesslicensesBLock.BUSLIC_SELECT_EXPERATIONDATE_CALENDAR(year: "2002",
-                day: "5");
-
-            Assert.IsTrue(selectExperationDateResult, "Failed to select expiration date.");
-
-            //var selectStateResult = await BusinesslicensesBLock.BUSLIC_SELECT_STATE("California");
-            var saveButtonResult = await BusinesslicensesBLock.BUSLIC_CREATE_BTN();
-
-            Assert.IsTrue(saveButtonResult, "Failed to click save button.");
-
-            // set Network Idle timeout to 10 seconds       
-            await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
-            await _page.WaitForTimeoutAsync(1000);
-            //screenshot before CreateNewBusinessLicense
-            await screenShorts.CaptureScreenshotAsync("BusinessLicenses_AfterCreateNewBusinessLicense");
-        }
-
-
-        [Test]
-        public async Task BusinessLicenses_EditIconFunctionality_EditLicenses_Type()
-        {
-            var screenShorts = new ScreenShorts(_page);
-            var sideBar = new SidebarNavigationBlock(_page);
-            var navigationResult = await sideBar.NavigateToAsync("Business Licenses");
-
-            Assert.IsTrue(navigationResult, "Navigation to Business Licenses failed.");
-
-            //Click on Create New Business License button 
-            var BusinesslicensesBLock = new BusinesslicensesBLocks(_page);
-
-            await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
-            await _page.WaitForTimeoutAsync(1000);
-            //screenshot before EditBusinessLicense
-            await screenShorts.CaptureScreenshotAsync("BusinessLicenses_BeforeEditLicenses_types");
-            //Enter Location Name and License Number and click on search button 
-
-            var enterLocationNameResult = await BusinesslicensesBLock.BUSLIC_ENTER_LOCATIONNAME("uganda");
-
-            Assert.IsTrue(enterLocationNameResult, "Failed to select location.");
-
-
-
-            var enterLicenseNumberResult = await BusinesslicensesBLock.BUSLIC_ENTER_LICENSENUMBER("BBC18");
-
-            Assert.IsTrue(enterLicenseNumberResult,"Failed to select Location Number");
-
-            await _page.WaitForTimeoutAsync(2000);
-            await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
-            var searchButtonResult = await BusinesslicensesBLock.BUSLIC_SEARCHBUTTON();
-
-            Assert.IsTrue(searchButtonResult, "Faild to click on SearchButton");
-
-
-            await _page.WaitForTimeoutAsync(2000);
-            await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
-            var EditIconResult = await BusinesslicensesBLock.BUSLIC_EDIT_ICON();
-
-            Assert.IsTrue(EditIconResult,"Failed to click on EditIcon button");
-
-            var EditSelectLicenseType = await BusinesslicensesBLock.BUSLIC_EditSELECT_LICENSETYPE("Elevator");
-
-            Assert.IsTrue(EditSelectLicenseType, "Failed to Select the LicenceType");
-
-            await screenShorts.CaptureScreenshotAsync("BusinessLicenses_AfterEditLicenses_types");
-            var EditSaveButton = await BusinesslicensesBLock.BUSLIC_ADV_SAVE_BUTTON();
-            Assert.IsTrue(EditSaveButton, "failed to click on Save Button");
-
-            await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
-            await _page.WaitForTimeoutAsync(1000);
-            await screenShorts.CaptureScreenshotAsync("BusinessLicenses_AfterEdit_Save");
-        }
-
-        [Test]
-        public async Task BusinessLicenses_ViewIconFunctionality()
-        {
-            var screenShorts = new ScreenShorts(_page);
-            var sideBar = new SidebarNavigationBlock(_page);
-            var navigationResult = await sideBar.NavigateToAsync("Business Licenses");
-            //Click on Create New Business License button 
-            var BusinesslicensesBLock = new BusinesslicensesBLocks(_page);
-
-
-            //Enter Location Name and License Number and click on search button 
-            //screenshot before ViewIconFunctionality
-            await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
-            await _page.WaitForTimeoutAsync(1000);
-            await screenShorts.CaptureScreenshotAsync("BusinessLicenses_Before_ViewIconFunctionality");
-
-            var enterLocationNameResult = await BusinesslicensesBLock.BUSLIC_ENTER_LOCATIONNAME("uganda");
-            var enterLicenseNumberResult = await BusinesslicensesBLock.BUSLIC_ENTER_LICENSENUMBER("LIC12345678");
-            await _page.WaitForTimeoutAsync(2000);
-            await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
-            var searchButtonResult = await BusinesslicensesBLock.BUSLIC_SEARCHBUTTON();
-
-            await _page.WaitForTimeoutAsync(2000);
-            await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
-            var EditIconResult = await BusinesslicensesBLock.BUSLIC_VIEW_ICON();
-            await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
-            await _page.WaitForTimeoutAsync(1000);
-            await screenShorts.CaptureScreenshotAsync("BusinessLicenses_After_ViewIconFunctionality");
-
-        }
-
-
-        [Test]
-        [Category("Delete")]
-        [Description("Delete business license withentering reason")]
-        public async Task DeleteBusinessLicense_WithtReason_ShouldDeleteSuccessfully()
-        {
-            var screenShorts = new ScreenShorts(_page);
-            var BusinesslicensesBLock = new BusinesslicensesBLocks(_page);
-            //Arrange
-            string deletionReason = "Testing deletion functionality";
-            string locationName = "uganda";
-            string licenseNumber = "BBC18";
-
-
-            var sideBar = new SidebarNavigationBlock(_page);
-            var navigationResult = await sideBar.NavigateToAsync("Business Licenses");
-
-           
-
-            //Enter Location Name and License Number and click on search button 
-            var enterLocationNameResult = await BusinesslicensesBLock.BUSLIC_ENTER_LOCATIONNAME(locationName);
-
-            Assert.IsTrue(enterLocationNameResult, "Failed to enter loaction Name");
-
-            var enterLicenseNumberResult = await BusinesslicensesBLock.BUSLIC_ENTER_LICENSENUMBER(licenseNumber);
-
-            Assert.IsTrue(enterLicenseNumberResult, "Failed to enter license number.");
-
-
-            await _page.WaitForTimeoutAsync(2000);
-            await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
-            var searchButtonResult = await BusinesslicensesBLock.BUSLIC_SEARCHBUTTON();
-
-            Assert.IsTrue(searchButtonResult, "Search button click failed.");
-
-
-            await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
-            await _page.WaitForTimeoutAsync(1000);
-            //screenshot before DeleteBusinessLicense
-            await screenShorts.CaptureScreenshotAsync("BusinessLicenses_Before_Delete");
-
-            // Act
-            var result = await BusinesslicensesBLock.BUSLIC_Block_DeleteWithReason(deletionReason) ;
-
-            // Assert
-            Assert.IsTrue(result, "Failed to delete business license without reason");
-
-            // Wait for deletion to complete
-            await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
-            await _page.WaitForTimeoutAsync(1000);
-            //screenshot after DeleteBusinessLicense
-            await screenShorts.CaptureScreenshotAsync("BusinessLicenses_After_Delete");
-
-            // Verify deletion by searching again
-            await BusinesslicensesBLock.BUSLIC_ENTER_LOCATIONNAME(locationName);
-
-            Assert.IsTrue(enterLocationNameResult, "failed to enter loaction name");
-
-            await BusinesslicensesBLock.BUSLIC_ENTER_LICENSENUMBER(licenseNumber);
-
-            Assert.IsTrue(enterLicenseNumberResult, "failed to enter license number."); 
-
-            await BusinesslicensesBLock.BUSLIC_SEARCHBUTTON();
-
-            Assert.IsTrue(searchButtonResult, "Search button click failed.");
-
-            await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
-            await _page.WaitForTimeoutAsync(2000);
-
-            // Verify the record no longer exists
-            var recordExistsAfterDelete = await BusinesslicensesBLock.BUSLIC_VerifySearchResultExists(licenseNumber);
-            Assert.IsFalse(recordExistsAfterDelete, $"License {licenseNumber} should NOT exist after deletion");
-            Console.WriteLine($"Test Passed: License {licenseNumber} successfully deleted and verified");
+            Assert.IsTrue(
+                await sideBar.NavigateToAsync("Business Licenses"),
+                "Navigation to Business Licenses failed");
+
+            // 2️⃣ Read Excel
+            var testData = ExcelDataProvider.GetData(
+                TestDataConfig.BusinessLicensesExcel,
+                TestDataConfig.BusinessLicensesSheet);
+
+            // 3️⃣ Create Flow
+            var flow = new BusinessLicensesFlow(_page);
+
+            // 4️⃣ Execute ALL rows
+            foreach (var row in testData)
+            {
+                // 1️⃣ Skip header-like or invalid rows
+                if (!row.ContainsKey("TestCaseID") ||
+                    row["TestCaseID"].Equals("Unique ID", StringComparison.OrdinalIgnoreCase))
+                    continue;
+
+                // 2️⃣ Skip rows where Run != TRUE
+                if (!ExcelHelper.IsTrue(row, "Run"))
+                    continue;
+
+                Console.WriteLine($"Executing TestCaseID = {row["TestCaseID"]}");
+
+                await flow.ExecuteAsync(row);
+
+                await _page.ReloadAsync();
+                await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+            }
         }
     }
 }

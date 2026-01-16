@@ -77,7 +77,6 @@ namespace AutomationPermitPros.AutomationBlocks
             }
         }
 
-
         public async Task<bool> BUSLIC_SELECT_LOCATION(string location)
         {
             try
@@ -189,7 +188,7 @@ namespace AutomationPermitPros.AutomationBlocks
             try
             {
                 await _businessPage.ClickSearch();
-                
+
                 return true;
             }
             catch
@@ -308,7 +307,7 @@ namespace AutomationPermitPros.AutomationBlocks
 
 
                 // Step 2: Wait for modal to appear
-                    await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+                await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
                 var isModalVisible = await _businessPage.BUSLIC_IsDeleteModelVisible();
                 if (!isModalVisible)
                 {
@@ -364,7 +363,117 @@ namespace AutomationPermitPros.AutomationBlocks
                 return false;
             }
         }
+
+        //Business License Action Methods-------------------
+
+        public async Task FillRenewalDateFromExcelAsync(Dictionary<string, string> data)
+        {
+            if (!data.TryGetValue("RenewalYear", out var year) ||
+                !data.TryGetValue("RenewalDay", out var day) ||
+                string.IsNullOrWhiteSpace(year) ||
+                string.IsNullOrWhiteSpace(day))
+            {
+                Console.WriteLine("Renewal Date skipped (no Excel data)");
+                return;
+            }
+
+            await _businessPage.SelectRenewalDateFromCalendarAsync(year, day);
+        }
+
+        public async Task FillExpirationDateFromExcelAsync(Dictionary<string, string> data)
+        {
+            if (!data.TryGetValue("ExpirationYear", out var year) ||
+                !data.TryGetValue("ExpirationDay", out var day) ||
+                string.IsNullOrWhiteSpace(year) ||
+                string.IsNullOrWhiteSpace(day))
+            {
+                Console.WriteLine("Expiration Date skipped (no Excel data)");
+                return;
+            }
+
+            await _businessPage.SelectExperitionDateFromCalendarAsync(year, day);
+        }
+
+        public async Task SearchAsync(Dictionary<string, string> data)
+        {
+            Console.WriteLine("Block: Search Business License");
+
+            if (data.TryGetValue("Search_LocationName", out var location) &&
+                !string.IsNullOrWhiteSpace(location))
+            {
+                await _businessPage.FillLocationNameAsync(location);
+            }
+
+            if (data.TryGetValue("Search_LicenseNumber", out var licenseNumber) &&
+                !string.IsNullOrWhiteSpace(licenseNumber))
+            {
+                await _businessPage.FillLicenseNumberAsync(licenseNumber);
+            }
+
+            await _businessPage.ClickSearch();
+        }
+
+        public async Task CreateAsync(Dictionary<string, string> data)
+        {
+            Console.WriteLine("Block: Create Business License");
+
+            // Go to create page
+            await _businessPage.ClickCreateNew();
+            await _businessPage.IsCreatePageLoaded();
+
+            // Fill form (Excel-driven)
+            await _businessPage.CreateBusinessLicenseAsync(
+                location: data.GetValueOrDefault("Location"),
+                agency: data.GetValueOrDefault("Agency"),
+                licenseNumber: data.GetValueOrDefault("LicenseNumber"),
+                licenseType: data.GetValueOrDefault("LicenseType"),
+                expirationDate: data.GetValueOrDefault("ExpirationDate"),
+                renewalDate: data.GetValueOrDefault("RenewalDate"),
+                description: data.GetValueOrDefault("Description"),
+                notes: data.GetValueOrDefault("Notes")
+            );
+        }
+
+        public async Task EditAsync(Dictionary<string, string> data)
+        {
+            Console.WriteLine("Block: Edit Business License");
+
+            await _businessPage.BUSLIC_Click_EditIcon();
+
+            if (data.ContainsKey("LicenseType"))
+                await _businessPage.EditSelectLocationAsync(data["LicenseType"]);
+
+            await _businessPage.BUSLIC_Adv_Save();
+        }
+
+
+        public async Task DeleteAsync(Dictionary<string, string> data)
+        {
+            Console.WriteLine("Block: Delete Business License");
+
+            var reason = data.GetValueOrDefault("DeleteReason") ?? "Automation Delete";
+            await BUSLIC_Block_DeleteWithReason(reason);
+        } 
+
+        public async Task ViewAsync()
+        {
+            Console.WriteLine("Block: View Business License");
+            await _businessPage.BUSLIC_Click_ViewIcon();
+        }
+
+
     }
 }
+
+
+
+
+
+
+
+
+
+
+
 
 

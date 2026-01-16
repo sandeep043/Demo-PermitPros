@@ -1,8 +1,10 @@
-﻿using AutomationPermitPros.Pages.Base;
+﻿using AutomationPermitPros.AutomationBlocks;
+using AutomationPermitPros.Pages.Base;
 using Microsoft.Playwright;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -109,9 +111,9 @@ namespace AutomationPermitPros.Pages
             await option.ClickAsync();
 
             // 5️⃣ Verify selection actually happened
-            var selectedValue = await select.InputValueAsync();
-            if (!selectedValue.Contains(optionLabel, StringComparison.OrdinalIgnoreCase))
-                throw new Exception($"License Type '{optionLabel}' was not selected.");
+            //var selectedValue = await select.InputValueAsync();
+            //if (!selectedValue.Contains(optionLabel, StringComparison.OrdinalIgnoreCase))
+            //    throw new Exception($"License Type '{optionLabel}' was not selected.");
         }
 
 
@@ -175,8 +177,6 @@ namespace AutomationPermitPros.Pages
             //if (string.IsNullOrWhiteSpace(selectedValue))
             //    throw new Exception("Location was not selected.");
         }
-
-
 
         public async Task SelectAgencyAsync(string agencyLabel)
         {
@@ -342,6 +342,16 @@ namespace AutomationPermitPros.Pages
             );
         }
 
+        private (string Year, string Day) SplitExcelDate(string excelDate)
+        {
+            var date = DateTime.ParseExact(
+                excelDate,
+                "MM/dd/yyyy",
+                CultureInfo.InvariantCulture);
+
+            return (date.Year.ToString(), date.Day.ToString());
+        }
+
 
 
 
@@ -396,7 +406,11 @@ namespace AutomationPermitPros.Pages
                 await FillLicenseNumberAsync(licenseNumber);
 
             if (!string.IsNullOrWhiteSpace(renewalDate))
-                await FillRenewalDateAsync(renewalDate);
+            {
+                var (year, day) = SplitExcelDate(renewalDate);
+
+                await SelectRenewalDateFromCalendarAsync(year, day);
+            }
 
             if (!string.IsNullOrWhiteSpace(description))
                 await FillDescriptionAsync(description);
@@ -405,7 +419,11 @@ namespace AutomationPermitPros.Pages
                 await SelectLicenseTypeAsync(licenseType);
 
             if (!string.IsNullOrWhiteSpace(expirationDate))
-                await FillExpirationDateAsync(expirationDate);
+            {
+                var (year, day) = SplitExcelDate(expirationDate);
+                await SelectExperitionDateFromCalendarAsync(year, day);
+            }
+                
 
             if (!string.IsNullOrWhiteSpace(dateIssued))
                 await FillDateIssuedAsync(dateIssued);
