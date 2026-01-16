@@ -19,16 +19,23 @@ namespace AutomationPermitPros.AutomationBlocks
             _page = page;
             _config=TestConfiguration.Instance;
             _loginPage = new LoginPage(page);
+
         }
 
         public async Task <bool> LOGIN()
         {
             try
             {
+                var screenShorts = new ScreenShorts(_page);
+
                 await _loginPage.NavigateToLogin(_config.AppSettings.BaseUrl);
+                await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+                await screenShorts.CaptureScreenshotAsync("BusinessLicense_BeforeLogin");
                 await _loginPage.EnterEmail(_config.Credentials.Username);
-                await _loginPage.EnterPassword(_config.Credentials.Password); 
+                await _loginPage.EnterPassword(_config.Credentials.Password);
                 await _loginPage.ClickLogin();
+                await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+                await _page.WaitForTimeoutAsync(2000);
                 return true;
             }
             catch (Exception ex)
