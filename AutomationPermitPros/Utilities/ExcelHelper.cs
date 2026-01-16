@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 
 namespace AutomationPermitPros.Utilities
 {
-    public class  ExcelHelper
+    public static class  ExcelHelper
     {
 
-        private bool IsTrue(Dictionary<string, string> data, string key)
+        public static bool IsTrue(Dictionary<string, string> data, string key)
         {
             return data.ContainsKey(key) &&
                    bool.TryParse(data[key], out var result) &&
@@ -17,4 +17,5 @@ namespace AutomationPermitPros.Utilities
         }
 
     }
+
 }

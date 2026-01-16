@@ -17,28 +17,35 @@ namespace AutomationPermitPros.Flows
         {
             Console.WriteLine($"Executing TestCase: {data["TestCaseID"]}");
 
-            // SEARCH (mandatory before actions)
+            //SEARCH (mandatory before actions)
             if (ExcelHelper.IsTrue(data, "Search"))
             {
                 Console.WriteLine("Flow: SEARCH");
                 await _block.SearchAsync(data);
             }
 
-            // 2️⃣ VIEW
+            //CREATE
+            if (ExcelHelper.IsTrue(data, "Create"))
+            {
+                Console.WriteLine("Flow: CREATE");
+                await _block.CreateAsync(data);
+            }
+
+            //VIEW
             if (ExcelHelper.IsTrue(data, "View"))
             {
                 Console.WriteLine("Flow: VIEW");
                 await _block.ViewAsync();
             }
 
-            // 3️⃣ EDIT
+            //EDIT
             if (ExcelHelper.IsTrue(data, "Edit"))
             {
                 Console.WriteLine("Flow: EDIT");
                 await _block.EditAsync(data);
             }
 
-            // 4️⃣ DELETE
+            //DELETE
             if (ExcelHelper.IsTrue(data, "Delete"))
             {
                 Console.WriteLine("Flow: DELETE");

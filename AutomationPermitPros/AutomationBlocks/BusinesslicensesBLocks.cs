@@ -366,12 +366,50 @@ namespace AutomationPermitPros.AutomationBlocks
 
         //Business License Action Methods-------------------
 
+        public async Task FillRenewalDateFromExcelAsync(Dictionary<string, string> data)
+        {
+            if (!data.TryGetValue("RenewalYear", out var year) ||
+                !data.TryGetValue("RenewalDay", out var day) ||
+                string.IsNullOrWhiteSpace(year) ||
+                string.IsNullOrWhiteSpace(day))
+            {
+                Console.WriteLine("Renewal Date skipped (no Excel data)");
+                return;
+            }
+
+            await _businessPage.SelectRenewalDateFromCalendarAsync(year, day);
+        }
+
+        public async Task FillExpirationDateFromExcelAsync(Dictionary<string, string> data)
+        {
+            if (!data.TryGetValue("ExpirationYear", out var year) ||
+                !data.TryGetValue("ExpirationDay", out var day) ||
+                string.IsNullOrWhiteSpace(year) ||
+                string.IsNullOrWhiteSpace(day))
+            {
+                Console.WriteLine("Expiration Date skipped (no Excel data)");
+                return;
+            }
+
+            await _businessPage.SelectExperitionDateFromCalendarAsync(year, day);
+        }
+
         public async Task SearchAsync(Dictionary<string, string> data)
         {
             Console.WriteLine("Block: Search Business License");
 
-            await _businessPage.FillLocationNameAsync(data["Location"]);
-            await _businessPage.FillLicenseNumberAsync(data["LicenseNumber"]);
+            if (data.TryGetValue("Search_LocationName", out var location) &&
+                !string.IsNullOrWhiteSpace(location))
+            {
+                await _businessPage.FillLocationNameAsync(location);
+            }
+
+            if (data.TryGetValue("Search_LicenseNumber", out var licenseNumber) &&
+                !string.IsNullOrWhiteSpace(licenseNumber))
+            {
+                await _businessPage.FillLicenseNumberAsync(licenseNumber);
+            }
+
             await _businessPage.ClickSearch();
         }
 
