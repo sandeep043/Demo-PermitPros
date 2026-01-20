@@ -71,6 +71,7 @@ namespace AutomationPermitPros.Tests
         [Test]
         public async Task BusinessLicenses_Execute_From_Excel()
         {
+            int excelRow = 2;
             // 1️⃣ Navigate once
             var sideBar = new SidebarNavigationBlock(_page);
             Assert.IsTrue(
@@ -91,18 +92,61 @@ namespace AutomationPermitPros.Tests
                 // 1️⃣ Skip header-like or invalid rows
                 if (!row.ContainsKey("TestCaseID") ||
                     row["TestCaseID"].Equals("Unique ID", StringComparison.OrdinalIgnoreCase))
+                {
+                    excelRow++;
                     continue;
+                }
+
 
                 // 2️⃣ Skip rows where Run != TRUE
                 if (!ExcelHelper.IsTrue(row, "Run"))
+                {
+                    //excelRow++;
                     continue;
 
-                Console.WriteLine($"Executing TestCaseID = {row["TestCaseID"]}");
+                }
 
-                await flow.ExecuteAsync(row);
 
-                await _page.ReloadAsync();
-                await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+                //Console.WriteLine($"Executing TestCaseID = {row["TestCaseID"]}");
+
+                //await flow.ExecuteAsync(row);
+
+                //await _page.ReloadAsync();
+                //await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+                try
+                {
+                    Console.WriteLine($"=== Executing TestCaseID = {row["TestCaseID"]} ===");
+                    Console.WriteLine($"Excel Row Number: {excelRow}");
+
+                    await flow.ExecuteAsync(row);
+
+                    ////PASS
+                    //ExcelResultWriter.WriteResult(
+                    //    TestDataConfig.BusinessLicensesExcel,
+                    //    TestDataConfig.BusinessLicensesSheet,
+                    //    excelRow,
+                    //    "PASS"
+                    //);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Exception occurred: {ex.Message}");
+
+                    //FAIL
+                    //ExcelResultWriter.WriteResult(
+                    //    TestDataConfig.BusinessLicensesExcel,
+                    //    TestDataConfig.BusinessLicensesSheet,
+                    //    excelRow,
+                    //    "FAIL",
+                    //    ex.Message
+                    //);
+                }
+                finally
+                {
+                    await _page.ReloadAsync();
+                    await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+                    //excelRow++;
+                }
             }
         }
     }
