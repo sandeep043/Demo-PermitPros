@@ -295,6 +295,8 @@ namespace AutomationPermitPros.AutomationBlocks
         {
             try
             {
+                
+
                 // Step 1: Click delete icon
                 var deleteIconClicked = await _businessPage.BUSLIC_Click_DeleteIcon();
                 if (!deleteIconClicked)
@@ -348,14 +350,33 @@ namespace AutomationPermitPros.AutomationBlocks
         {
             try
             {
-                // Look for a table row containing the license number
-                var row = _page.Locator($"//tr[contains(.,'{licenseNumber}')]");
+                // Wait for table or results area to load
+                await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
-                // Check if the row is visible
-                bool isVisible = await row.IsVisibleAsync();
+                // Target only table BODY rows
+                var rows = _page.Locator("table tbody tr");
 
-                Console.WriteLine($"License {licenseNumber} exists in search results: {isVisible}");
-                return isVisible;
+                int rowCount = await rows.CountAsync();
+                if (rowCount == 0)
+                {
+                    Console.WriteLine("No rows found in search results");
+                    return false;
+                }
+
+                // Check each row for the license number
+                for (int i = 0; i < rowCount; i++)
+                {
+                    string rowText = await rows.Nth(i).InnerTextAsync();
+
+                    if (rowText.Contains(licenseNumber, StringComparison.OrdinalIgnoreCase))
+                    {
+                        Console.WriteLine($"License {licenseNumber} exists in search results");
+                        return true;
+                    }
+                }
+
+                Console.WriteLine($"License {licenseNumber} NOT found in search results");
+                return false;
             }
             catch (Exception ex)
             {
@@ -363,6 +384,7 @@ namespace AutomationPermitPros.AutomationBlocks
                 return false;
             }
         }
+
 
         //Business License Action Methods-------------------
 
@@ -442,7 +464,6 @@ namespace AutomationPermitPros.AutomationBlocks
 
             if (data.ContainsKey("LicenseType"))
                 await _businessPage.EditSelectLocationAsync(data["LicenseType"]);
-
             await _businessPage.BUSLIC_Adv_Save();
         }
 
@@ -451,7 +472,7 @@ namespace AutomationPermitPros.AutomationBlocks
         {
             Console.WriteLine("Block: Delete Business License");
 
-            var reason = data.GetValueOrDefault("DeleteReason") ?? "Automation Delete";
+            var reason = data.GetValueOrDefault("Delete_Reason") ?? "Automation Delete";
             await BUSLIC_Block_DeleteWithReason(reason);
         } 
 
@@ -461,7 +482,17 @@ namespace AutomationPermitPros.AutomationBlocks
             await _businessPage.BUSLIC_Click_ViewIcon();
         }
 
+        //validate Create Success Message
 
+        public async Task<string> GetToastMessageAsync()
+        {
+            var toast = _page.GetByRole(AriaRole.Alert);
+
+            //Wait until toast appears
+            await toast.WaitForAsync(new() { Timeout = 5000 });
+
+            return (await toast.InnerTextAsync()).Trim();
+        }
     }
 }
 

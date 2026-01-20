@@ -1,7 +1,9 @@
 ﻿using AutomationPermitPros.AutomationBlocks;
 using AutomationPermitPros.Pages.Base;
+using DocumentFormat.OpenXml.Spreadsheet;
 using Microsoft.Playwright;
 using Newtonsoft.Json.Linq;
+using NUnit.Framework.Internal;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -540,6 +542,20 @@ namespace AutomationPermitPros.Pages
         public async Task<bool> BUSLIC_CancelDelete()
         {
             return await _baseListPage.CancelDelete();
+        }
+
+
+        //Success toast message:
+        public async Task<string> GetToastMessageAsync()
+        {
+            var toast = _page.GetByText("Created Successfully");
+            await toast.WaitForAsync(new() { Timeout = 5000 });
+            return (await toast.InnerTextAsync()).Trim();
+        }
+
+        public async Task<bool> IsToastVisibleAsync()
+        {
+            return await _page.GetByRole(AriaRole.Alert).IsVisibleAsync();
         }
     }
 }
