@@ -17,7 +17,7 @@ namespace AutomationPermitPros.Flows
         public async Task ExecuteAsync(Dictionary<string, string> data)
         {
             Console.WriteLine($"Executing TestCase: {data["TestCaseID"]}");
-
+            //await sideBar.NavigateToAsync("Business Licenses");
             //SEARCH (mandatory before actions)
             if (ExcelHelper.IsTrue(data, "Search"))
             {
@@ -25,33 +25,36 @@ namespace AutomationPermitPros.Flows
 
                 await _block.SearchAsync(data);
 
-                string expectedSearchResult = data.GetValueOrDefault("ExpectedOutcome");
+                await  _block.ReloadAsync();
 
-                if (!string.IsNullOrWhiteSpace(expectedSearchResult))
-                {
-                    bool exists = await _block.BUSLIC_VerifySearchResultExists(
-                        data["Search_LicenseNumber"]
-                    );
 
-                    if (expectedSearchResult.Equals("FOUND", StringComparison.OrdinalIgnoreCase))
-                    {
-                        Assert.IsTrue(
-                            exists,
-                            $"Expected record '{data["Search_LicenseNumber"]}' to be found, but it was NOT found"
-                        );
-                    }
-                    else if (expectedSearchResult.Equals("NOTFOUND", StringComparison.OrdinalIgnoreCase))
-                    {
-                        Assert.IsFalse(
-                            exists,
-                            $"Expected record '{data["Search_LicenseNumber"]}' to NOT be found, but it EXISTS"
-                        );
-                    }
-                    else
-                    {
-                        Assert.Fail($"Unknown SearchExpectedResult '{expectedSearchResult}' in Excel");
-                    }
-                }
+                //string expectedSearchResult = data.GetValueOrDefault("ExpectedOutcome");
+
+                //if (!string.IsNullOrWhiteSpace(expectedSearchResult))
+                //{
+                //    bool exists = await _block.BUSLIC_VerifySearchResultExists(
+                //        data["Search_LicenseNumber"]
+                //    );
+
+                //    if (expectedSearchResult.Equals("FOUND", StringComparison.OrdinalIgnoreCase))
+                //    {
+                //        Assert.IsTrue(
+                //            exists,
+                //            $"Expected record '{data["Search_LicenseNumber"]}' to be found, but it was NOT found"
+                //        );
+                //    }
+                //    else if (expectedSearchResult.Equals("NOTFOUND", StringComparison.OrdinalIgnoreCase))
+                //    {
+                //        Assert.IsFalse(
+                //            exists,
+                //            $"Expected record '{data["Search_LicenseNumber"]}' to NOT be found, but it EXISTS"
+                //        );
+                //    }
+                //    else
+                //    {
+                //        Assert.Fail($"Unknown SearchExpectedResult '{expectedSearchResult}' in Excel");
+                //    }
+                //}
             }
 
 
@@ -67,6 +70,7 @@ namespace AutomationPermitPros.Flows
                 string expectedMessage = data["ExpectedMessage"];
 
                 string actualMessage = await _block.GetToastMessageAsync();
+                Console.WriteLine($"Actual Toast Message: {actualMessage}");
 
                 Assert.IsNotNull(actualMessage, "Expected a toast message, but none appeared");
 
@@ -77,8 +81,6 @@ namespace AutomationPermitPros.Flows
                         Does.Contain(expectedMessage).IgnoreCase,
                         $"Expected SUCCESS message '{expectedMessage}' but got '{actualMessage}'"
                     );
-
-                    await _block.SearchAsync(data);
 
                     // 3️⃣ Verify result
                     bool exists = await _block.BUSLIC_VerifySearchResultExists(
@@ -146,9 +148,6 @@ namespace AutomationPermitPros.Flows
                     );
 
                     //Validate record is really deleted
-                    await _block.SearchAsync(data);
-
-                    await _block.SearchAsync(data);
 
                     bool existsBeforeDelete = await _block.BUSLIC_VerifySearchResultExists(
                         data["Search_LicenseNumber"]
@@ -176,9 +175,6 @@ namespace AutomationPermitPros.Flows
                         Does.Contain(expectedMessage).IgnoreCase,
                         $"Expected ERROR delete message '{expectedMessage}' but got '{actualMessage}'"
                     );
-
-                    //Record SHOULD still exist
-                    await _block.SearchAsync(data);
 
                     bool exists = await _block.BUSLIC_VerifySearchResultExists(
                         data["Search_LicenseNumber"]

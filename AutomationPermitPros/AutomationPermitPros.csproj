@@ -11,12 +11,7 @@
 
   <ItemGroup>
     <None Remove="TestData\BusinessLicenses.xlsx" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Include="TestData\BusinessLicenses.xlsx">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+    <None Remove="TestData\~%24TestData.xlsx" />
   </ItemGroup>
 
   <ItemGroup>
@@ -42,6 +37,10 @@
     <None Update="appsettings.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="TestData\" />
   </ItemGroup>
 
 </Project>

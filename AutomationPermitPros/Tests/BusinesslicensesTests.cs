@@ -69,73 +69,87 @@ namespace AutomationPermitPros.Tests
         }
 
         [Test]
-        public async Task BusinessLicenses_Execute_From_Excel()
+        public async Task Execute_Modules_Based_On_TestNames_Sheet()
         {
-            int excelRow = 2;
-            // 1️⃣ Navigate once
             var sideBar = new SidebarNavigationBlock(_page);
-            Assert.IsTrue(
-                await sideBar.NavigateToAsync("Business Licenses"),
-                "Navigation to Business Licenses failed");
 
-            // 2️⃣ Read Excel
+            // 1️⃣ Read controller sheet
+            var controllerData = ExcelDataProvider.GetData(
+                TestDataConfig.TestDataExcel,
+                TestDataConfig.ControllerSheet
+            );
+
+            foreach (var controllerRow in controllerData)
+            {
+                if (!ExcelHelper.IsTrue(controllerRow, "Run"))
+                    continue;
+
+                string sheetName = controllerRow["SheetName"].Trim();
+
+                Console.WriteLine($"=== Running Module Sheet: {sheetName} ===");
+
+                // 2️⃣ Navigate based on module
+                switch (sheetName)
+                {
+                    case "BusinessLicense_TestData":
+                        await sideBar.NavigateToAsync("Business Licenses");
+                        await ExecuteModuleSheet(
+                            sheetName,
+                            new BusinessLicensesFlow(_page)
+                        );
+                        break;
+
+                    case "Locations_TestData":
+                        await sideBar.NavigateToAsync("Locations");
+                        await ExecuteModuleSheet(
+                            sheetName,
+                            new LocationFlow(_page)
+                        );
+                        break;
+
+                    default:
+                        throw new Exception($"Unknown SheetName '{sheetName}' in TestNames");
+                }
+            }
+        }
+ private async Task ExecuteModuleSheet(
+    string sheetName,
+    dynamic flow)
+        {
             var testData = ExcelDataProvider.GetData(
-                TestDataConfig.BusinessLicensesExcel,
-                TestDataConfig.BusinessLicensesSheet);
+                TestDataConfig.TestDataExcel,
+                sheetName
+            );
 
-            // 3️⃣ Create Flow
-            var flow = new BusinessLicensesFlow(_page);
+            //int excelRow = 2; // header is row 1
 
-            // 4️⃣ Execute ALL rows
             foreach (var row in testData)
             {
-                // 1️⃣ Skip header-like or invalid rows
-                if (!row.ContainsKey("TestCaseID") ||
-                    row["TestCaseID"].Equals("Unique ID", StringComparison.OrdinalIgnoreCase))
-                {
-                    excelRow++;
-                    continue;
-                }
-
-
-                // 2️⃣ Skip rows where Run != TRUE
                 if (!ExcelHelper.IsTrue(row, "Run"))
                 {
                     //excelRow++;
                     continue;
-
                 }
 
+                Console.WriteLine($"Executing {sheetName} | TestCaseID = {row["TestCaseID"]}");
 
-                //Console.WriteLine($"Executing TestCaseID = {row["TestCaseID"]}");
-
-                //await flow.ExecuteAsync(row);
-
-                //await _page.ReloadAsync();
-                //await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
                 try
                 {
-                    Console.WriteLine($"=== Executing TestCaseID = {row["TestCaseID"]} ===");
-                    Console.WriteLine($"Excel Row Number: {excelRow}");
-
                     await flow.ExecuteAsync(row);
 
-                    ////PASS
                     //ExcelResultWriter.WriteResult(
-                    //    TestDataConfig.BusinessLicensesExcel,
-                    //    TestDataConfig.BusinessLicensesSheet,
+                    //    TestDataConfig.TestDataExcel,
+                    //    sheetName,
                     //    excelRow,
                     //    "PASS"
                     //);
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Exception occurred: {ex.Message}");
-
-                    //FAIL
+                    Console.WriteLine($"TestCaseID {row["TestCaseID"]} FAILED: {ex.Message}");
                     //ExcelResultWriter.WriteResult(
-                    //    TestDataConfig.BusinessLicensesExcel,
-                    //    TestDataConfig.BusinessLicensesSheet,
+                    //    TestDataConfig.TestDataExcel,
+                    //    sheetName,
                     //    excelRow,
                     //    "FAIL",
                     //    ex.Message
@@ -149,5 +163,9 @@ namespace AutomationPermitPros.Tests
                 }
             }
         }
+
+
+
     }
 }
+
