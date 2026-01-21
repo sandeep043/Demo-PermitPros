@@ -1,5 +1,6 @@
 ﻿using AutomationPermitPros.Pages.Base;
 using DocumentFormat.OpenXml.Spreadsheet;
+using DocumentFormat.OpenXml.Wordprocessing;
 using Microsoft.Playwright;
 using System;
 using System.Collections.Generic;
@@ -52,6 +53,10 @@ namespace AutomationPermitPros.Pages
         public async Task ClickCreateNew()
         {
             await _baseListpage.ClickCreateNew();
+        }
+        public async Task ClickCreate()
+        {
+            await _page.GetByRole(AriaRole.Button, new() { Name = "Create" }).ClickAsync();
         }
 
 

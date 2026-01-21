@@ -18,5 +18,7 @@ namespace AutomationPermitPros.AutomationBlocks
             locationPage = new LocationPage(_page);
 
         }
+
+        
     }
 }

@@ -11,28 +11,25 @@ namespace AutomationPermitPros.Config
         private static string TestDataRoot =>
             Path.Combine(AppContext.BaseDirectory, "TestData");
 
-        private const string DefaultSheet = "BusinessLicense_TestData";
+        private const string ExcelFileName = "TestData.xlsx";
+        public static string TestDataExcel => GetExcelPath();
 
-        // Business Licenses
-        public static string BusinessLicensesExcel =>
-            GetExcelPath("BusinessLicenses.xlsx");
-        public static string BusinessLicensesSheet => DefaultSheet;
+        public static string ControllerSheet => "TestNames";
 
-        // Locations
-        public static string LocationsExcel =>
-            GetExcelPath("Locations.xlsx");
-        public static string LocationsSheet => DefaultSheet;
 
-        private static string GetExcelPath(string fileName)
+        public const string BusinessLicensesSheet = "BusinessLicense_TestData";
+        public const string LocationsSheet = "Locations";
+        public const string StaffLicensesSheet = "StaffLicenses";
+
+        private static string GetExcelPath()
         {
-            var path = Path.Combine(TestDataRoot, fileName);
+            var path = Path.Combine(TestDataRoot, ExcelFileName);
 
             if (!File.Exists(path))
-                throw new FileNotFoundException($"Excel not found: {path}");
+                throw new FileNotFoundException($"Test data Excel not found: {path}");
 
             return path;
         }
-
 
     }
 }

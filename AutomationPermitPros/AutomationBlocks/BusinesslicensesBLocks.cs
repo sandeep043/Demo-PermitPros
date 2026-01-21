@@ -420,19 +420,29 @@ namespace AutomationPermitPros.AutomationBlocks
         {
             Console.WriteLine("Block: Search Business License");
 
-            if (data.TryGetValue("Search_LocationName", out var location) &&
-                !string.IsNullOrWhiteSpace(location))
-            {
-                await _businessPage.FillLocationNameAsync(location);
-            }
+            //if (data.TryGetValue("Search_LocationName", out var location) &&
+            //    !string.IsNullOrWhiteSpace(location))
+            //{
+            //    await _businessPage.FillLocationNameAsync(location);
+            //}
 
-            if (data.TryGetValue("Search_LicenseNumber", out var licenseNumber) &&
-                !string.IsNullOrWhiteSpace(licenseNumber))
-            {
-                await _businessPage.FillLicenseNumberAsync(licenseNumber);
-            }
+            //if (data.TryGetValue("Search_LicenseNumber", out var licenseNumber) &&
+            //    !string.IsNullOrWhiteSpace(licenseNumber))
+            //{
+            //    await _businessPage.FillLicenseNumberAsync(licenseNumber);
+            //}
 
-            await _businessPage.ClickSearch();
+            //if (data.TryGetValue("Search_LicenseType", out var licenseType) && !string.IsNullOrWhiteSpace(licenseNumber))
+
+
+            //    await _businessPage.ClickSearch();
+            await _businessPage.SearchBusinessLicenseAsync(
+                locationName: data.GetValueOrDefault("Search_LocationName"),
+                licenseNumber: data.GetValueOrDefault("Search_LicenseNumber"),
+                licenseType: data.GetValueOrDefault("Search_LicenseType"),
+                locationNumber: data.GetValueOrDefault("Search_LocationNumber"),
+                state: data.GetValueOrDefault("Search_State")
+                );
         }
 
         public async Task CreateAsync(Dictionary<string, string> data)
@@ -452,9 +462,18 @@ namespace AutomationPermitPros.AutomationBlocks
                 expirationDate: data.GetValueOrDefault("ExpirationDate"),
                 renewalDate: data.GetValueOrDefault("RenewalDate"),
                 description: data.GetValueOrDefault("Description"),
-                notes: data.GetValueOrDefault("Notes")
+                notes: data.GetValueOrDefault("Notes"),
+                licenseReceivedDate: data.GetValueOrDefault("LicenseReceivedDate"),
+                 dateIssued: data.GetValueOrDefault("DateIssued"),
+                 effectiveDate: data.GetValueOrDefault("EffectiveDate"),
+                 applicationRenewalSentDate: data.GetValueOrDefault("ApplicationRenewalSentDate"),
+                 renewalAppReceivedDate: data.GetValueOrDefault("RenewalAppReceivedDate"),
+                 escrowStatusId: data.GetValueOrDefault("EscrowStatusID"),
+                 prevEscrowStatusId: data.GetValueOrDefault("PrevEscrowStatusID"),
+                 previousEscrowStatusDate: data.GetValueOrDefault("PreviousEscrowStatusDate")
             );
         }
+
 
         public async Task EditAsync(Dictionary<string, string> data)
         {
@@ -471,6 +490,7 @@ namespace AutomationPermitPros.AutomationBlocks
         public async Task DeleteAsync(Dictionary<string, string> data)
         {
             Console.WriteLine("Block: Delete Business License");
+
 
             var reason = data.GetValueOrDefault("Delete_Reason") ?? "Automation Delete";
             await BUSLIC_Block_DeleteWithReason(reason);
@@ -492,6 +512,13 @@ namespace AutomationPermitPros.AutomationBlocks
             await toast.WaitForAsync(new() { Timeout = 5000 });
 
             return (await toast.InnerTextAsync()).Trim();
+        }
+
+
+        public async Task ReloadAsync()
+        {
+            await _page.ReloadAsync();
+            await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
         }
     }
 }

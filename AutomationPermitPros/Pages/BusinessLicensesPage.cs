@@ -344,6 +344,16 @@ namespace AutomationPermitPros.Pages
             );
         }
 
+        public async Task SelectDateIssuedFromCalendaryAsync(
+     string year,string day)
+        {
+            await _baseListPage.SelectMuiDateFromCalendarAsync(
+                calendarIndex: 3,
+                year: year,
+                day: day
+            );
+        }
+
         private (string Year, string Day) SplitExcelDate(string excelDate)
         {
             var date = DateTime.ParseExact(
@@ -428,7 +438,11 @@ namespace AutomationPermitPros.Pages
                 
 
             if (!string.IsNullOrWhiteSpace(dateIssued))
-                await FillDateIssuedAsync(dateIssued);
+            {
+                var (year, day) = SplitExcelDate(dateIssued);
+                await SelectDateIssuedFromCalendaryAsync(year, day);
+            }
+            
 
             if (!string.IsNullOrWhiteSpace(effectiveDate))
                 await FillEffectiveDateAsync(effectiveDate);
@@ -456,6 +470,74 @@ namespace AutomationPermitPros.Pages
 
             // finally click create
             await ClickCreateButtonAsync();
+        }
+        public async Task SearchBusinessLicenseAsync(
+    string? locationNumber = null,
+    string? locationName = null,
+    string? licenseNumber = null,
+    string? licenseType = null,
+    string? state = null)
+        {
+            if (!string.IsNullOrWhiteSpace(locationNumber))
+                await FillLocationNumberAsync(locationNumber);
+            if (!string.IsNullOrWhiteSpace(locationName))
+                await FillLocationNameAsync(locationName);
+            if (!string.IsNullOrWhiteSpace(licenseNumber))
+                await FillLicenseNumberAsync(licenseNumber);
+            if (!string.IsNullOrWhiteSpace(licenseType))
+                await SelectLicenseTypeAsync(licenseType);
+            if (!string.IsNullOrWhiteSpace(state))
+                await SelectStateAsync(state);
+            await ClickSearch();
+        }
+
+
+
+  public async Task EditBusinessLicenseAsync(
+   string? location = null,
+    string? licenseReceivedDate = null,
+    string? agency = null,
+    string? licenseNumber = null,
+    string? renewalDate = null,
+    string? description = null,
+    string? licenseType = null,
+    string? expirationDate = null,
+    string? dateIssued = null,
+    string? effectiveDate = null,
+    string? renewalAppReceivedDate = null,
+    string? applicationRenewalSentDate = null,
+    string? escrowStatusId = null,
+    string? prevEscrowStatusId = null,
+    string? previousEscrowStatusDate = null,
+
+    string? notes = null)
+        {
+            if (!string.IsNullOrWhiteSpace(location))
+                await EditSelectLocationAsync(location);
+            if (!string.IsNullOrWhiteSpace(licenseType))
+                await SelectLicenseTypeAsync(licenseType);
+            if (!string.IsNullOrWhiteSpace(expirationDate))
+                await FillExpirationDateAsync(expirationDate);
+            if (!string.IsNullOrWhiteSpace(agency))
+                await SelectAgencyAsync(agency);
+            if (!string.IsNullOrWhiteSpace(licenseNumber))
+                await FillLicenseNumberAsync(licenseNumber);
+            if (!string.IsNullOrWhiteSpace(description))
+                await FillDescriptionAsync(description);
+            if (!string.IsNullOrWhiteSpace(escrowStatusId))
+                await FillEscrowStatusIdAsync(escrowStatusId);
+            if (!string.IsNullOrWhiteSpace(prevEscrowStatusId))
+                await FillPrevEscrowStatusIdAsync(prevEscrowStatusId);
+            if (!string.IsNullOrWhiteSpace(notes))
+                await FillNotesAsync(notes);
+            if (!string.IsNullOrWhiteSpace(licenseReceivedDate))
+                await FillLicenseReceivedDateAsync(licenseReceivedDate);
+            if (!string.IsNullOrWhiteSpace(renewalDate))
+                await FillRenewalDateAsync(renewalDate);
+            if (!string.IsNullOrWhiteSpace(dateIssued))
+                await FillDateIssuedAsync(dateIssued);
+
+
         }
 
         // Submit/back
