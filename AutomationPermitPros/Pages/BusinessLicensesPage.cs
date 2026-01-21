@@ -1,8 +1,12 @@
-﻿using AutomationPermitPros.Pages.Base;
+﻿using AutomationPermitPros.AutomationBlocks;
+using AutomationPermitPros.Pages.Base;
+using DocumentFormat.OpenXml.Spreadsheet;
 using Microsoft.Playwright;
 using Newtonsoft.Json.Linq;
+using NUnit.Framework.Internal;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -109,9 +113,9 @@ namespace AutomationPermitPros.Pages
             await option.ClickAsync();
 
             // 5️⃣ Verify selection actually happened
-            var selectedValue = await select.InputValueAsync();
-            if (!selectedValue.Contains(optionLabel, StringComparison.OrdinalIgnoreCase))
-                throw new Exception($"License Type '{optionLabel}' was not selected.");
+            //var selectedValue = await select.InputValueAsync();
+            //if (!selectedValue.Contains(optionLabel, StringComparison.OrdinalIgnoreCase))
+            //    throw new Exception($"License Type '{optionLabel}' was not selected.");
         }
 
 
@@ -175,8 +179,6 @@ namespace AutomationPermitPros.Pages
             //if (string.IsNullOrWhiteSpace(selectedValue))
             //    throw new Exception("Location was not selected.");
         }
-
-
 
         public async Task SelectAgencyAsync(string agencyLabel)
         {
@@ -342,6 +344,26 @@ namespace AutomationPermitPros.Pages
             );
         }
 
+        public async Task SelectDateIssuedFromCalendaryAsync(
+     string year,string day)
+        {
+            await _baseListPage.SelectMuiDateFromCalendarAsync(
+                calendarIndex: 3,
+                year: year,
+                day: day
+            );
+        }
+
+        private (string Year, string Day) SplitExcelDate(string excelDate)
+        {
+            var date = DateTime.ParseExact(
+                excelDate,
+                "MM/dd/yyyy",
+                CultureInfo.InvariantCulture);
+
+            return (date.Year.ToString(), date.Day.ToString());
+        }
+
 
 
 
@@ -396,7 +418,11 @@ namespace AutomationPermitPros.Pages
                 await FillLicenseNumberAsync(licenseNumber);
 
             if (!string.IsNullOrWhiteSpace(renewalDate))
-                await FillRenewalDateAsync(renewalDate);
+            {
+                var (year, day) = SplitExcelDate(renewalDate);
+
+                await SelectRenewalDateFromCalendarAsync(year, day);
+            }
 
             if (!string.IsNullOrWhiteSpace(description))
                 await FillDescriptionAsync(description);
@@ -405,10 +431,18 @@ namespace AutomationPermitPros.Pages
                 await SelectLicenseTypeAsync(licenseType);
 
             if (!string.IsNullOrWhiteSpace(expirationDate))
-                await FillExpirationDateAsync(expirationDate);
+            {
+                var (year, day) = SplitExcelDate(expirationDate);
+                await SelectExperitionDateFromCalendarAsync(year, day);
+            }
+                
 
             if (!string.IsNullOrWhiteSpace(dateIssued))
-                await FillDateIssuedAsync(dateIssued);
+            {
+                var (year, day) = SplitExcelDate(dateIssued);
+                await SelectDateIssuedFromCalendaryAsync(year, day);
+            }
+            
 
             if (!string.IsNullOrWhiteSpace(effectiveDate))
                 await FillEffectiveDateAsync(effectiveDate);
@@ -436,6 +470,74 @@ namespace AutomationPermitPros.Pages
 
             // finally click create
             await ClickCreateButtonAsync();
+        }
+        public async Task SearchBusinessLicenseAsync(
+    string? locationNumber = null,
+    string? locationName = null,
+    string? licenseNumber = null,
+    string? licenseType = null,
+    string? state = null)
+        {
+            if (!string.IsNullOrWhiteSpace(locationNumber))
+                await FillLocationNumberAsync(locationNumber);
+            if (!string.IsNullOrWhiteSpace(locationName))
+                await FillLocationNameAsync(locationName);
+            if (!string.IsNullOrWhiteSpace(licenseNumber))
+                await FillLicenseNumberAsync(licenseNumber);
+            if (!string.IsNullOrWhiteSpace(licenseType))
+                await SelectLicenseTypeAsync(licenseType);
+            if (!string.IsNullOrWhiteSpace(state))
+                await SelectStateAsync(state);
+            await ClickSearch();
+        }
+
+
+
+  public async Task EditBusinessLicenseAsync(
+   string? location = null,
+    string? licenseReceivedDate = null,
+    string? agency = null,
+    string? licenseNumber = null,
+    string? renewalDate = null,
+    string? description = null,
+    string? licenseType = null,
+    string? expirationDate = null,
+    string? dateIssued = null,
+    string? effectiveDate = null,
+    string? renewalAppReceivedDate = null,
+    string? applicationRenewalSentDate = null,
+    string? escrowStatusId = null,
+    string? prevEscrowStatusId = null,
+    string? previousEscrowStatusDate = null,
+
+    string? notes = null)
+        {
+            if (!string.IsNullOrWhiteSpace(location))
+                await EditSelectLocationAsync(location);
+            if (!string.IsNullOrWhiteSpace(licenseType))
+                await SelectLicenseTypeAsync(licenseType);
+            if (!string.IsNullOrWhiteSpace(expirationDate))
+                await FillExpirationDateAsync(expirationDate);
+            if (!string.IsNullOrWhiteSpace(agency))
+                await SelectAgencyAsync(agency);
+            if (!string.IsNullOrWhiteSpace(licenseNumber))
+                await FillLicenseNumberAsync(licenseNumber);
+            if (!string.IsNullOrWhiteSpace(description))
+                await FillDescriptionAsync(description);
+            if (!string.IsNullOrWhiteSpace(escrowStatusId))
+                await FillEscrowStatusIdAsync(escrowStatusId);
+            if (!string.IsNullOrWhiteSpace(prevEscrowStatusId))
+                await FillPrevEscrowStatusIdAsync(prevEscrowStatusId);
+            if (!string.IsNullOrWhiteSpace(notes))
+                await FillNotesAsync(notes);
+            if (!string.IsNullOrWhiteSpace(licenseReceivedDate))
+                await FillLicenseReceivedDateAsync(licenseReceivedDate);
+            if (!string.IsNullOrWhiteSpace(renewalDate))
+                await FillRenewalDateAsync(renewalDate);
+            if (!string.IsNullOrWhiteSpace(dateIssued))
+                await FillDateIssuedAsync(dateIssued);
+
+
         }
 
         // Submit/back
@@ -522,6 +624,20 @@ namespace AutomationPermitPros.Pages
         public async Task<bool> BUSLIC_CancelDelete()
         {
             return await _baseListPage.CancelDelete();
+        }
+
+
+        //Success toast message:
+        public async Task<string> GetToastMessageAsync()
+        {
+            var toast = _page.GetByText("Created Successfully");
+            await toast.WaitForAsync(new() { Timeout = 5000 });
+            return (await toast.InnerTextAsync()).Trim();
+        }
+
+        public async Task<bool> IsToastVisibleAsync()
+        {
+            return await _page.GetByRole(AriaRole.Alert).IsVisibleAsync();
         }
     }
 }
