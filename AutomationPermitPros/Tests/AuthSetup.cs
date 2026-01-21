@@ -20,11 +20,19 @@ namespace AutomationPermitPros.Tests
         {
             using var playwright = await Playwright.CreateAsync();
             var browser = await playwright.Chromium.LaunchAsync(
-                new BrowserTypeLaunchOptions { Headless = false }
+                new BrowserTypeLaunchOptions
+                {
+                    Headless = false,
+                    Args = new[] { "--window-size=1920,1080" }
+                }
             );
 
+            // Create the context with a fixed viewport that matches the browser window size.
+            var context = await browser.NewContextAsync(new BrowserNewContextOptions
+            {
+                ViewportSize = new ViewportSize { Width = 1920, Height = 1080 }
+            });
 
-            var context = await browser.NewContextAsync();
             var page = await context.NewPageAsync();
             var screenShorts = new ScreenShorts(page);
             // Login once

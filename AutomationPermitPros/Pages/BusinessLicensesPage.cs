@@ -71,7 +71,7 @@ private ILocator PageHeader => _page.GetByRole(AriaRole.Heading, new() { Name = 
         private ILocator StateDropdown => _page.GetByRole(AriaRole.Combobox, new() { Name = "State" });
 
         // Other form controls
-        private ILocator DescriptionInput => _page.GetByRole(AriaRole.Textbox, new() { Name = "Description" });
+        private ILocator DescriptionInput => _page.GetByRole(AriaRole.Textbox, new() { Name = "City" }).Nth(1);
         private ILocator NotesTextArea => _page.GetByLabel("Notes");
         private ILocator CreateButton => _page.GetByRole(AriaRole.Button, new() { Name = "Create" });
         private ILocator BackToListButton => _page.GetByRole(AriaRole.Button, new() { Name = "Back To List" });
@@ -171,27 +171,35 @@ private ILocator PageHeader => _page.GetByRole(AriaRole.Heading, new() { Name = 
 
             // 1️⃣ Open dropdown
             await select.ClickAsync();
-
             await select.WaitForAsync(new() { Timeout = 2000 });
 
             // 2️⃣ Type filter text
             await select.FillAsync(optionLabel);
 
-            // 3️⃣ Wait for option to appear (CRITICAL)
-            var option = _page.GetByRole(
-                AriaRole.Option,
-                new() { Name = optionLabel }
-            );
+            // 3️⃣ Wait for options to appear (CRITICAL)
+            var options = _page.GetByRole(AriaRole.Option);
+            await options.First.WaitForAsync(new() { Timeout = 5000 });
 
-            await option.WaitForAsync(new() { Timeout = 2000 });
+            // 4️⃣ Find option whose visible text matches exactly the requested label and click it.
+            var count = await options.CountAsync();
+            for (int i = 0; i < count; i++)
+            {
+                var opt = options.Nth(i);
+                var text = (await opt.InnerTextAsync())?.Trim() ?? string.Empty;
 
-            // 4️⃣ Click the option explicitly
-            await option.ClickAsync();
+                if (string.Equals(text, optionLabel, StringComparison.OrdinalIgnoreCase))
+                {
+                    await opt.ClickAsync();
+                    // Optional: verify selection happened (uncomment if desired)
+                    // var selectedValue = await select.InputValueAsync();
+                    // if (!selectedValue.Contains(optionLabel, StringComparison.OrdinalIgnoreCase))
+                    //     throw new Exception($"License Type '{optionLabel}' was not selected.");
+                    return;
+                }
+            }
 
-            // 5️⃣ Verify selection actually happened
-            //var selectedValue = await select.InputValueAsync();
-            //if (!selectedValue.Contains(optionLabel, StringComparison.OrdinalIgnoreCase))
-            //    throw new Exception($"License Type '{optionLabel}' was not selected.");
+            // If we reach here no exact match was found
+            throw new Exception($"No option with exact label '{optionLabel}' was found in the License Type dropdown.");
         }
 
 
@@ -397,6 +405,16 @@ private ILocator PageHeader => _page.GetByRole(AriaRole.Heading, new() { Name = 
         public async Task FillRenewalDateAsync(string dateValue)
             => await _baseListPage.FillDateFieldAsync("Renewal Date", dateValue);
 
+        public async Task SelectLicenseReceivedDateAsync(
+          string year,
+          string day)
+        {
+            await _baseListPage.SelectMuiDateFromCalendarAsync(
+                calendarIndex: 0,
+                year: year,
+                day: day
+            );
+        }
         public async Task SelectRenewalDateFromCalendarAsync(
       string year,
       string day)
@@ -408,6 +426,7 @@ private ILocator PageHeader => _page.GetByRole(AriaRole.Heading, new() { Name = 
             );
         }
 
+      
 
         public async Task SelectExperitionDateFromCalendarAsync(
       string year,
@@ -429,6 +448,49 @@ private ILocator PageHeader => _page.GetByRole(AriaRole.Heading, new() { Name = 
                 day: day
             );
         }
+
+        public async Task SelectEffectiveDateFromCalendaryAsync(
+            string year, string day)
+        {
+            await _baseListPage.SelectMuiDateFromCalendarAsync(
+                calendarIndex: 4,
+                year: year,
+                day: day
+            );
+        }
+
+
+
+        public async Task SelectRenewalAppReceivedDateFromCalendarAsync(
+           string year, string day)
+        {
+            await _baseListPage.SelectMuiDateFromCalendarAsync(
+                calendarIndex: 5,
+                year: year,
+                day: day
+            );
+        }
+
+
+        public async Task SelectApplicationRenewalSentDateFromCalendaryAsync(
+          string year, string day)
+        {
+            await _baseListPage.SelectMuiDateFromCalendarAsync(
+                calendarIndex: 6,
+                year: year,
+                day: day
+            );
+        }
+        public async Task SelectPreviousEscrowStatusDateFromCalendaryAsync(
+         string year, string day)
+        {
+            await _baseListPage.SelectMuiDateFromCalendarAsync(
+                calendarIndex: 7,
+                year: year,
+                day: day
+            );
+        }
+
 
         private (string Year, string Day) SplitExcelDate(string excelDate)
         {
@@ -485,7 +547,11 @@ private ILocator PageHeader => _page.GetByRole(AriaRole.Heading, new() { Name = 
                 await SelectLocationAsync(location);
 
             if (!string.IsNullOrWhiteSpace(licenseReceivedDate))
-                await FillLicenseReceivedDateAsync(licenseReceivedDate);
+            { 
+                var (year, day) = SplitExcelDate(licenseReceivedDate);
+                await SelectLicenseReceivedDateAsync(year,day);
+            }
+                
 
             if (!string.IsNullOrWhiteSpace(agency))
                 await SelectAgencyAsync(agency);
@@ -518,16 +584,25 @@ private ILocator PageHeader => _page.GetByRole(AriaRole.Heading, new() { Name = 
                 var (year, day) = SplitExcelDate(dateIssued);
                 await SelectDateIssuedFromCalendaryAsync(year, day);
             }
-            
+
 
             if (!string.IsNullOrWhiteSpace(effectiveDate))
-                await FillEffectiveDateAsync(effectiveDate);
-
+            {  
+                var (year,day ) = SplitExcelDate(effectiveDate);
+               await SelectEffectiveDateFromCalendaryAsync(year, day);
+            }
             if (!string.IsNullOrWhiteSpace(renewalAppReceivedDate))
-                await FillRenewalAppReceivedDateAsync(renewalAppReceivedDate);
+            {
+                var (year, day) = SplitExcelDate(renewalAppReceivedDate);
+                await SelectRenewalAppReceivedDateFromCalendarAsync(year, day);
+            }
+             
 
             if (!string.IsNullOrWhiteSpace(applicationRenewalSentDate))
-                await FillApplicationRenewalSentDateAsync(applicationRenewalSentDate);
+            {
+                var (year, day) = SplitExcelDate(applicationRenewalSentDate);
+                await SelectApplicationRenewalSentDateFromCalendaryAsync(year, day);
+            }
 
             if (!string.IsNullOrWhiteSpace(escrowStatusId))
                 await FillEscrowStatusIdAsync(escrowStatusId);
@@ -536,7 +611,10 @@ private ILocator PageHeader => _page.GetByRole(AriaRole.Heading, new() { Name = 
                 await FillPrevEscrowStatusIdAsync(prevEscrowStatusId);
 
             if (!string.IsNullOrWhiteSpace(previousEscrowStatusDate))
-                await FillPreviousEscrowStatusDateAsync(previousEscrowStatusDate);
+            {
+                var (year, day) = SplitExcelDate(previousEscrowStatusDate);
+                await SelectPreviousEscrowStatusDateFromCalendaryAsync(year, day);
+            }
 
             if (!string.IsNullOrWhiteSpace(uploadFilePath))
                 await UploadDocumentAsync(uploadFilePath);
