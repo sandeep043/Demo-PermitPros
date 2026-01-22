@@ -65,7 +65,7 @@ private ILocator PageHeader => _page.GetByRole(AriaRole.Heading, new() { Name = 
         private ILocator AgencySelectInput => _page.GetByRole(AriaRole.Combobox, new() { Name = "Default select example" }).Nth(1);
         private ILocator LicenseTypeSelectInput => _page.GetByRole(AriaRole.Combobox, new() { Name = "Default select example" }).Nth(2);
 
-        private ILocator EditLicenseTypeSelectInput => _page.Locator("#react-select-4-input");
+       
 
         // State <select> as combobox
         private ILocator StateDropdown => _page.GetByRole(AriaRole.Combobox, new() { Name = "State" });
@@ -81,7 +81,11 @@ private ILocator PageHeader => _page.GetByRole(AriaRole.Heading, new() { Name = 
         private ILocator EscrowStatusIdInput => _page.GetByPlaceholder("Enter Escrow Status ID");
         private ILocator PrevEscrowStatusIdInput => _page.GetByPlaceholder("Enter Prev Escrow Status ID");
 
-      // Search List Tast Methods 
+
+        //Edit ILocators 
+        private ILocator EditLicenseTypeSelectInput => _page.GetByRole(AriaRole.Textbox, new() { Name = "Enter Location Name" });
+
+        // Search List Tast Methods 
 
         public async Task SearchFillLocationNumberAsync(string value)
         {
