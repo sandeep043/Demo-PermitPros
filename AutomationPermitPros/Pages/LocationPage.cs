@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Reflection.Emit;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -26,6 +27,57 @@ namespace AutomationPermitPros.Pages
             _page = page;
         }
 
+        private ILocator SearchLocationNumberInput => _page.GetByRole(AriaRole.Textbox, new() { Name = "Enter Location Number" });
+
+        private ILocator SearchLocationNameInput => _page.GetByRole(AriaRole.Textbox, new() { Name = "Enter Location Name" });
+
+        private ILocator SearchStateDropdown => _page.GetByRole(AriaRole.Combobox).First;
+
+
+        //create ILocators 
+
+        private ILocator CreateStateDropDown => _page.Locator("div").Filter(new() { HasTextRegex = new Regex("^Select state$") }).Nth(2);
+
+        private ILocator CreateCategories => _page.GetByRole(AriaRole.Textbox, new() { Name = "categories" }).Nth(1);
+
+        private ILocator CreateManagementEntity => _page.GetByRole(AriaRole.Textbox, new() { Name = "categories" }).First;
+
+        private ILocator CreateParentEntity =>_page.Locator("select");
+
+
+
+
+        //Search Location Methods 
+
+        public async Task SearchFillLocationNumberAsync(string value)
+        {
+            await SearchLocationNumberInput.FillAsync(value);
+        }
+
+        public async Task SearchFillLocationNameAsync(string value)
+        {
+            await SearchLocationNameInput.FillAsync(value);
+        }
+
+        public async Task SearchSelectStateAsync(string stateLabel)
+        {
+            var select = SearchStateDropdown;
+
+            if (await select.CountAsync() == 0)
+                throw new Exception("License type combobox not found.");
+
+            // 1️⃣ Open dropdown
+            await select.ClickAsync();
+
+            await select.WaitForAsync(new() { Timeout = 2000 });
+
+            // 2️⃣ Type filter text
+            await select.SelectOptionAsync(new[] { stateLabel });
+
+            await select.WaitForAsync(new() { Timeout = 2000 });
+        }
+
+        //Create Location Form fill Methods
 
         public async Task fillLegalNameAsync(string legalName)
         {
@@ -50,7 +102,9 @@ namespace AutomationPermitPros.Pages
         public async Task StateDropDown(string state)
         {
             // Click the third "Select state" div (nth starts at 0)
-            await _page.GetByText("Select state").ClickAsync();
+            var select = CreateStateDropDown;
+            await select.ClickAsync();
+            //await _page.Locator("#react-select-2-input").FillAsync(state);
 
             await _page.Keyboard.TypeAsync(state);
             await Task.Delay(200);
@@ -61,24 +115,32 @@ namespace AutomationPermitPros.Pages
 
         public async Task SelectManagementEntityDropDown(string managementEntity)
         {
-            await _page.GetByText("Select Management Entity").ClickAsync();
+            var select = CreateManagementEntity;
+            await select.ClickAsync();
+
+            await _page.GetByLabel(managementEntity).ClickAsync();
+
+
+
             //will see how to select value from dropdown
-            await _page.GetByText(managementEntity, new() { Exact = true }).ClickAsync();
-        } 
+        }
 
         public async Task SelectCategoriesDropDown(string categories)
         {
             // Click the second categories textbox (nth starts at 0)
-            await _page.GetByRole(AriaRole.Textbox, new() { Name = "categories" }).Nth(1).ClickAsync();
-         
+            var select = CreateCategories; 
+            await select.ClickAsync(); 
             await _page.GetByText(categories, new() { Exact = true }).ClickAsync();
         }
-
+        //
         public async Task SelectParentEntityDropdown(string parentEntity)
         {
-            await _page.GetByText("Select parent Corporation").ClickAsync();
-            //will see how to select value from dropdown
-            await _page.GetByText(parentEntity, new() { Exact = true }).ClickAsync();
+            var select = CreateParentEntity;
+            await select.ClickAsync();
+            await select.SelectOptionAsync(new SelectOptionValue { Label = parentEntity });
+            //press enter 
+            //await _page.Keyboard.PressAsync("Enter");
+
         }
 
         public async Task SelectDateOpenedDateFromCalendarAsync(
@@ -161,6 +223,24 @@ namespace AutomationPermitPros.Pages
 
             return (date.Year.ToString(), date.Day.ToString());
         }
+
+
+        public async Task SearchBusinessLicenseAsync(
+            string ? locationNumber = null,
+            string ? locationName = null,
+            string? state = null
+            )
+        {
+            if (!string.IsNullOrWhiteSpace(locationNumber))
+                await SearchFillLocationNumberAsync(locationNumber);
+            if (!string.IsNullOrWhiteSpace(locationName))
+                await SearchFillLocationNameAsync(locationName);
+            if (!string.IsNullOrWhiteSpace(state))
+                await SearchSelectStateAsync(state);
+            await _baseListpage.ClickSearch();
+        }
+
+
         public async Task CreateLocationAsync(
             string ? legalName = null,
             string ? locationNumber = null,
@@ -208,8 +288,13 @@ namespace AutomationPermitPros.Pages
                 await contactPhoneFillAsync(contactPhone);
             if (!string.IsNullOrWhiteSpace(contactEmail))
                 await contactEmailFillAsync(contactEmail);
+
+
+
             if (!string.IsNullOrWhiteSpace(ParentEntity))
                 await SelectParentEntityDropdown(ParentEntity);
+
+
             if (!string.IsNullOrWhiteSpace(ManagementEntity))
                 await SelectManagementEntityDropDown(ManagementEntity);
             if (!string.IsNullOrWhiteSpace(categories))
