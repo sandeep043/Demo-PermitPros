@@ -26,7 +26,11 @@ namespace AutomationPermitPros.Tests
         public async Task Setup()
         {
             _playwright = await Playwright.CreateAsync();
-            _browser = await _playwright.Chromium.LaunchAsync(new Microsoft.Playwright.BrowserTypeLaunchOptions { Headless = false });
+            _browser = await _playwright.Chromium.LaunchAsync(new Microsoft.Playwright.BrowserTypeLaunchOptions
+            {
+                Headless = false,
+                Args = new[] { "--window-size=1920,1080" }
+            });
 
 
             _screenshotDirectory = Path.Combine(AppContext.BaseDirectory, "Screenshots");
@@ -45,7 +49,8 @@ namespace AutomationPermitPros.Tests
             Assert.IsTrue(File.Exists(storagePath), $"Authentication storage file not found at '{storagePath}'. Run AuthSetup first.");
             var context = await _browser.NewContextAsync(new BrowserNewContextOptions
             {
-                StorageStatePath = storagePath
+                StorageStatePath = storagePath,
+                ViewportSize = new ViewportSize { Width = 1920, Height = 1080 }
             });
 
             _page = await context.NewPageAsync();
