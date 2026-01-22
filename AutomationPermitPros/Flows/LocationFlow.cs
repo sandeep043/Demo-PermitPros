@@ -20,6 +20,45 @@ namespace AutomationPermitPros.Flows
 
         public async Task ExecuteAsync(Dictionary<string, string> data)
         {
+
+
+            if (ExcelHelper.IsTrue(data, "Search"))
+            {
+                Console.WriteLine("Flow: SEARCH");
+
+                await _block.SearchAsync(data);
+
+                await _block.ReloadAsync();
+
+
+                //string expectedSearchResult = data.GetValueOrDefault("ExpectedOutcome");
+
+                //if (!string.IsNullOrWhiteSpace(expectedSearchResult))
+                //{
+                //    bool exists = await _block.BUSLIC_VerifySearchResultExists(
+                //        data["Search_LicenseNumber"]
+                //    );
+
+                //    if (expectedSearchResult.Equals("FOUND", StringComparison.OrdinalIgnoreCase))
+                //    {
+                //        Assert.IsTrue(
+                //            exists,
+                //            $"Expected record '{data["Search_LicenseNumber"]}' to be found, but it was NOT found"
+                //        );
+                //    }
+                //    else if (expectedSearchResult.Equals("NOTFOUND", StringComparison.OrdinalIgnoreCase))
+                //    {
+                //        Assert.IsFalse(
+                //            exists,
+                //            $"Expected record '{data["Search_LicenseNumber"]}' to NOT be found, but it EXISTS"
+                //        );
+                //    }
+                //    else
+                //    {
+                //        Assert.Fail($"Unknown SearchExpectedResult '{expectedSearchResult}' in Excel");
+                //    }
+                //}
+            }
             if (ExcelHelper.IsTrue(data, "Create"))
             {
                 Console.WriteLine("Flow: CREATE");

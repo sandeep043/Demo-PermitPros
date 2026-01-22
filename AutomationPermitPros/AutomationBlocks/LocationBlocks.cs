@@ -52,9 +52,26 @@ namespace AutomationPermitPros.AutomationBlocks
                 LocationDescription: data.GetValueOrDefault("Location Description"),
                 notes: data.GetValueOrDefault("Notes"),
                 isActive: ExcelHelper.IsTrue(data, "Active")
-                ); 
+                );
         }
 
+
+        public async Task SearchAsync(Dictionary<string, string> data)
+        {
+            Console.WriteLine("Block: Search Business License");
+
+
+            await _locationPage.SearchBusinessLicenseAsync(
+                locationName: data.GetValueOrDefault("Search_LocationName"),
+                locationNumber: data.GetValueOrDefault("Search_LocationNumber"),
+                state: data.GetValueOrDefault("Search_State")
+                );
+        }
+        public async Task ReloadAsync()
+        {
+            await _page.ReloadAsync();
+            await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+        }
 
     }
 }
