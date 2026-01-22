@@ -2,17 +2,19 @@
 using DocumentFormat.OpenXml.Spreadsheet;
 using DocumentFormat.OpenXml.Wordprocessing;
 using Microsoft.Playwright;
+using NUnit.Framework.Internal;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
+using System.Reflection.Emit;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace AutomationPermitPros.Pages
 {
-
-
-
 
     public class LocationPage
     {
@@ -25,6 +27,57 @@ namespace AutomationPermitPros.Pages
             _page = page;
         }
 
+        private ILocator SearchLocationNumberInput => _page.GetByRole(AriaRole.Textbox, new() { Name = "Enter Location Number" });
+
+        private ILocator SearchLocationNameInput => _page.GetByRole(AriaRole.Textbox, new() { Name = "Enter Location Name" });
+
+        private ILocator SearchStateDropdown => _page.GetByRole(AriaRole.Combobox).First;
+
+
+        //create ILocators 
+
+        private ILocator CreateStateDropDown => _page.Locator("div").Filter(new() { HasTextRegex = new Regex("^Select state$") }).Nth(2);
+
+        private ILocator CreateCategories => _page.GetByRole(AriaRole.Textbox, new() { Name = "categories" }).Nth(1);
+
+        private ILocator CreateManagementEntity => _page.GetByRole(AriaRole.Textbox, new() { Name = "categories" }).First;
+
+        private ILocator CreateParentEntity =>_page.Locator("select");
+
+
+
+
+        //Search Location Methods 
+
+        public async Task SearchFillLocationNumberAsync(string value)
+        {
+            await SearchLocationNumberInput.FillAsync(value);
+        }
+
+        public async Task SearchFillLocationNameAsync(string value)
+        {
+            await SearchLocationNameInput.FillAsync(value);
+        }
+
+        public async Task SearchSelectStateAsync(string stateLabel)
+        {
+            var select = SearchStateDropdown;
+
+            if (await select.CountAsync() == 0)
+                throw new Exception("License type combobox not found.");
+
+            // 1️⃣ Open dropdown
+            await select.ClickAsync();
+
+            await select.WaitForAsync(new() { Timeout = 2000 });
+
+            // 2️⃣ Type filter text
+            await select.SelectOptionAsync(new[] { stateLabel });
+
+            await select.WaitForAsync(new() { Timeout = 2000 });
+        }
+
+        //Create Location Form fill Methods
 
         public async Task fillLegalNameAsync(string legalName)
         {
@@ -44,21 +97,219 @@ namespace AutomationPermitPros.Pages
         public async Task  fillOwnerShipAsync(string ownerShip)
         {
             await _page.GetByPlaceholder("Ownership %").FillAsync(ownerShip);
+        } 
+
+        public async Task StateDropDown(string state)
+        {
+            // Click the third "Select state" div (nth starts at 0)
+            var select = CreateStateDropDown;
+            await select.ClickAsync();
+            //await _page.Locator("#react-select-2-input").FillAsync(state);
+
+            await _page.Keyboard.TypeAsync(state);
+            await Task.Delay(200);
+
+            // Select the exact matching item
+            await _page.GetByText(state, new() { Exact = true }).ClickAsync();
         }
 
-        public async Task FillOpenedDateAsync(string dateValue)
-           => await _baseListpage.FillDateFieldAsync("Date Opened", dateValue);
+        public async Task SelectManagementEntityDropDown(string managementEntity)
+        {
+            var select = CreateManagementEntity;
+            await select.ClickAsync();
 
+            await _page.GetByLabel(managementEntity).ClickAsync();
+
+
+
+            //will see how to select value from dropdown
+        }
+
+        public async Task SelectCategoriesDropDown(string categories)
+        {
+            // Click the second categories textbox (nth starts at 0)
+            var select = CreateCategories; 
+            await select.ClickAsync(); 
+            await _page.GetByText(categories, new() { Exact = true }).ClickAsync();
+        }
+        //
+        public async Task SelectParentEntityDropdown(string parentEntity)
+        {
+            var select = CreateParentEntity;
+            await select.ClickAsync();
+            await select.SelectOptionAsync(new SelectOptionValue { Label = parentEntity });
+            //press enter 
+            //await _page.Keyboard.PressAsync("Enter");
+
+        }
+
+        public async Task SelectDateOpenedDateFromCalendarAsync(
+      string year,
+      string day)
+        {
+            await _baseListpage.SelectMuiDateFromCalendarAsync(
+                calendarIndex: 0,
+                year: year,
+                day: day
+            );
+        }
+
+
+        public async Task SelectDateClosedDateFromCalendarAsync(
+        string year,
+            string day)
+        {
+            await _baseListpage.SelectMuiDateFromCalendarAsync(
+                calendarIndex: 1,
+                year: year,
+                day: day
+            );
+        }
+
+
+        public async Task SelectLocationDescriptionFillAsync(string locationDescription)
+        {
+            await _page.Locator("div:nth-child(12) > div > .form-control").FillAsync(locationDescription);
+        } 
+
+        public async Task contactEmailFillAsync(string contactEmail)
+        {
+            await _page.GetByPlaceholder("Enter Contact Email").FillAsync(contactEmail);
+        }
+
+        public async Task contactPhoneFillAsync(string contactPhone)
+        {
+            await _page.GetByPlaceholder("XXX-XXX-XXXX").FillAsync(contactPhone);
+        }  
+
+
+        public async Task AccountingNumberFillAsync(string accountingNumber)
+        {
+            await _page.GetByPlaceholder("Enter Accounting Number").FillAsync(accountingNumber);
+        } 
+
+
+        public  async Task NotesFillsync(string notes)
+        {
+            await _page.Locator("textarea").FillAsync(notes);   
+        }  
+
+        public async Task IsActiveCheckBoxAsync(bool isActive)
+        {
+           var isChecked= await _page.Locator("#autoSizingCheck2").IsCheckedAsync();
+            if (isActive != isChecked)
+            {
+                await  _page.Locator("#autoSizingCheck2").ClickAsync();
+            }
+        }
 
         public async Task ClickCreateNew()
         {
             await _baseListpage.ClickCreateNew();
         }
+
         public async Task ClickCreate()
         {
             await _page.GetByRole(AriaRole.Button, new() { Name = "Create" }).ClickAsync();
+            await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+        }
+
+        private (string Year, string Day) SplitExcelDate(string excelDate)
+        {
+            var date = DateTime.ParseExact(
+                excelDate,
+                "MM/dd/yyyy",
+                CultureInfo.InvariantCulture);
+
+            return (date.Year.ToString(), date.Day.ToString());
         }
 
 
+        public async Task SearchBusinessLicenseAsync(
+            string ? locationNumber = null,
+            string ? locationName = null,
+            string? state = null
+            )
+        {
+            if (!string.IsNullOrWhiteSpace(locationNumber))
+                await SearchFillLocationNumberAsync(locationNumber);
+            if (!string.IsNullOrWhiteSpace(locationName))
+                await SearchFillLocationNameAsync(locationName);
+            if (!string.IsNullOrWhiteSpace(state))
+                await SearchSelectStateAsync(state);
+            await _baseListpage.ClickSearch();
+        }
+
+
+        public async Task CreateLocationAsync(
+            string ? legalName = null,
+            string ? locationNumber = null,
+            string ? locationName = null,
+            string ? ownerShip = null,
+            string? ParentEntity=null,
+            string ? dateOpened = null,
+            string? AccountingNumber = null,
+            string? DateClosed = null,
+            string? State=null,
+            string? contactPhone=null,
+            string? contactEmail= null,
+            string? ManagementEntity= null,
+            string? categories= null,
+            string? LocationDescription = null,
+            string? notes= null ,
+            string? locationDescription = null,
+            bool? isActive = false
+            )
+        { 
+            if (!string.IsNullOrWhiteSpace(legalName))
+                await fillLegalNameAsync(legalName);
+            if (!string.IsNullOrWhiteSpace(locationNumber))
+                await fillLocationNumber(locationNumber);
+            if (!string.IsNullOrWhiteSpace(locationName))
+                await fillLocationName(locationName);
+            if (!string.IsNullOrWhiteSpace(ownerShip))
+                await fillOwnerShipAsync(ownerShip);
+            if (!string.IsNullOrWhiteSpace(dateOpened))
+            {
+                var (year, day) = SplitExcelDate(dateOpened);
+
+                await SelectDateOpenedDateFromCalendarAsync(year, day);
+            }
+
+            if(!string.IsNullOrWhiteSpace(DateClosed))
+            {
+                var (year, day) = SplitExcelDate(DateClosed);
+                await SelectDateClosedDateFromCalendarAsync(year, day);
+            }
+            if (!string.IsNullOrWhiteSpace(State))
+                await StateDropDown(State);
+
+            if (!string.IsNullOrWhiteSpace(contactPhone))
+                await contactPhoneFillAsync(contactPhone);
+            if (!string.IsNullOrWhiteSpace(contactEmail))
+                await contactEmailFillAsync(contactEmail);
+
+
+
+            if (!string.IsNullOrWhiteSpace(ParentEntity))
+                await SelectParentEntityDropdown(ParentEntity);
+
+
+            if (!string.IsNullOrWhiteSpace(ManagementEntity))
+                await SelectManagementEntityDropDown(ManagementEntity);
+            if (!string.IsNullOrWhiteSpace(categories))
+                await SelectCategoriesDropDown(categories);
+            if (!string.IsNullOrWhiteSpace(LocationDescription))
+                    await SelectLocationDescriptionFillAsync(LocationDescription);
+            if (!string.IsNullOrWhiteSpace(AccountingNumber))
+                await AccountingNumberFillAsync(AccountingNumber);
+            if (!string.IsNullOrWhiteSpace(notes))
+                await NotesFillsync(notes);
+            if (isActive.HasValue)
+                await IsActiveCheckBoxAsync(isActive.Value);
+
+
+            await ClickCreate();
+        }
     }
 }
