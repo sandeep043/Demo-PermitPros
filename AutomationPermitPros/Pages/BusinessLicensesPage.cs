@@ -354,6 +354,18 @@ namespace AutomationPermitPros.Pages
             );
         }
 
+        public async Task SelectEffectiveDateFromCalendarAsync(
+            string year, string day)
+        {
+            await _baseListPage.SelectMuiDateFromCalendarAsync(
+                calendarIndex: 4,
+                year: year,
+                day: day
+            );
+        }
+
+
+
         private (string Year, string Day) SplitExcelDate(string excelDate)
         {
             var date = DateTime.ParseExact(
@@ -442,11 +454,13 @@ namespace AutomationPermitPros.Pages
                 var (year, day) = SplitExcelDate(dateIssued);
                 await SelectDateIssuedFromCalendaryAsync(year, day);
             }
-            
+
 
             if (!string.IsNullOrWhiteSpace(effectiveDate))
+            { 
+                var (year, day) = SplitExcelDate(effectiveDate);
                 await FillEffectiveDateAsync(effectiveDate);
-
+            }
             if (!string.IsNullOrWhiteSpace(renewalAppReceivedDate))
                 await FillRenewalAppReceivedDateAsync(renewalAppReceivedDate);
 
