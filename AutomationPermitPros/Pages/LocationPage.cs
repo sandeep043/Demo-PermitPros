@@ -42,9 +42,15 @@ namespace AutomationPermitPros.Pages
 
         private ILocator CreateManagementEntity => _page.GetByRole(AriaRole.Textbox, new() { Name = "categories" }).First;
 
-        private ILocator CreateParentEntity =>_page.Locator("select");
+        private ILocator CreateParentEntity => _page.Locator("select");
 
+        // Edit Locators 
 
+        private ILocator EditStateDropDownInput =>_page.Locator(".css-1xc3v61-indicatorContainer");
+
+        private ILocator EditManagementEntity => _page.Locator(".arrow").First;
+
+        private ILocator EditCategories => _page.Locator("div:nth-child(11) > .custom-multi-select > .select-box > .arrow");
 
 
         //Search Location Methods 
@@ -84,9 +90,9 @@ namespace AutomationPermitPros.Pages
             await _page.GetByPlaceholder("Enter Legal Name").FillAsync(legalName);
         }
 
-       public async Task fillLocationNumber(string locationNumber)
+        public async Task fillLocationNumber(string locationNumber)
         {
-           await _page.GetByPlaceholder("Enter Location Number").FillAsync(locationNumber);
+            await _page.GetByPlaceholder("Enter Location Number").FillAsync(locationNumber);
         }
 
         public async Task fillLocationName(string locationName)
@@ -94,10 +100,10 @@ namespace AutomationPermitPros.Pages
             await _page.GetByPlaceholder("Enter Location Name").FillAsync(locationName);
         }
 
-        public async Task  fillOwnerShipAsync(string ownerShip)
+        public async Task fillOwnerShipAsync(string ownerShip)
         {
             await _page.GetByPlaceholder("Ownership %").FillAsync(ownerShip);
-        } 
+        }
 
         public async Task StateDropDown(string state)
         {
@@ -113,6 +119,18 @@ namespace AutomationPermitPros.Pages
             await _page.GetByText(state, new() { Exact = true }).ClickAsync();
         }
 
+        public async Task EditStateDropDown(string state)
+        {
+            var select = EditStateDropDownInput;
+            await select.ClickAsync();
+            await _page.Keyboard.TypeAsync(state);
+            await Task.Delay(200);
+
+            // Select the exact matching item
+            await _page.GetByText(state, new() { Exact = true }).ClickAsync();
+
+        }
+
         public async Task SelectManagementEntityDropDown(string managementEntity)
         {
             var select = CreateManagementEntity;
@@ -125,11 +143,25 @@ namespace AutomationPermitPros.Pages
             //will see how to select value from dropdown
         }
 
+        public async Task EditManagementEntityDropDown(string managementEntity)
+        {
+            var select = EditManagementEntity;
+            await select.ClickAsync();
+            await _page.GetByLabel(managementEntity).ClickAsync();
+        }
+
         public async Task SelectCategoriesDropDown(string categories)
         {
             // Click the second categories textbox (nth starts at 0)
-            var select = CreateCategories; 
-            await select.ClickAsync(); 
+            var select = CreateCategories;
+            await select.ClickAsync();
+            await _page.GetByText(categories, new() { Exact = true }).ClickAsync();
+        }
+
+        public async Task EditCategoriesDropDown(string categories)
+        {
+            var select = EditCategories;
+            await select.ClickAsync();
             await _page.GetByText(categories, new() { Exact = true }).ClickAsync();
         }
         //
@@ -172,7 +204,7 @@ namespace AutomationPermitPros.Pages
         public async Task SelectLocationDescriptionFillAsync(string locationDescription)
         {
             await _page.Locator("div:nth-child(12) > div > .form-control").FillAsync(locationDescription);
-        } 
+        }
 
         public async Task contactEmailFillAsync(string contactEmail)
         {
@@ -182,26 +214,26 @@ namespace AutomationPermitPros.Pages
         public async Task contactPhoneFillAsync(string contactPhone)
         {
             await _page.GetByPlaceholder("XXX-XXX-XXXX").FillAsync(contactPhone);
-        }  
+        }
 
 
         public async Task AccountingNumberFillAsync(string accountingNumber)
         {
             await _page.GetByPlaceholder("Enter Accounting Number").FillAsync(accountingNumber);
-        } 
+        }
 
 
-        public  async Task NotesFillsync(string notes)
+        public async Task NotesFillsync(string notes)
         {
-            await _page.Locator("textarea").FillAsync(notes);   
-        }  
+            await _page.Locator("textarea").FillAsync(notes);
+        }
 
         public async Task IsActiveCheckBoxAsync(bool isActive)
         {
-           var isChecked= await _page.Locator("#autoSizingCheck2").IsCheckedAsync();
+            var isChecked = await _page.Locator("#autoSizingCheck2").IsCheckedAsync();
             if (isActive != isChecked)
             {
-                await  _page.Locator("#autoSizingCheck2").ClickAsync();
+                await _page.Locator("#autoSizingCheck2").ClickAsync();
             }
         }
 
@@ -250,15 +282,22 @@ namespace AutomationPermitPros.Pages
 
 
 
+        public async Task<bool> LOC_Click_EditIcon()
+        {
+            return await _baseListpage.Click_EditIcon();
+        }
 
-
+        public async Task<bool> LOC_Adv_Save()
+        {
+            return await _baseListpage.Adv_Save();
+        }
 
 
 
 
         public async Task SearchBusinessLicenseAsync(
-            string ? locationNumber = null,
-            string ? locationName = null,
+            string? locationNumber = null,
+            string? locationName = null,
             string? state = null
             )
         {
@@ -273,25 +312,25 @@ namespace AutomationPermitPros.Pages
 
 
         public async Task CreateLocationAsync(
-            string ? legalName = null,
-            string ? locationNumber = null,
-            string ? locationName = null,
-            string ? ownerShip = null,
-            string? ParentEntity=null,
-            string ? dateOpened = null,
+            string? legalName = null,
+            string? locationNumber = null,
+            string? locationName = null,
+            string? ownerShip = null,
+            string? ParentEntity = null,
+            string? dateOpened = null,
             string? AccountingNumber = null,
             string? DateClosed = null,
-            string? State=null,
-            string? contactPhone=null,
-            string? contactEmail= null,
-            string? ManagementEntity= null,
-            string? categories= null,
+            string? State = null,
+            string? contactPhone = null,
+            string? contactEmail = null,
+            string? ManagementEntity = null,
+            string? categories = null,
             string? LocationDescription = null,
-            string? notes= null ,
+            string? notes = null,
             string? locationDescription = null,
             bool? isActive = false
             )
-        { 
+        {
             if (!string.IsNullOrWhiteSpace(legalName))
                 await fillLegalNameAsync(legalName);
             if (!string.IsNullOrWhiteSpace(locationNumber))
@@ -307,7 +346,7 @@ namespace AutomationPermitPros.Pages
                 await SelectDateOpenedDateFromCalendarAsync(year, day);
             }
 
-            if(!string.IsNullOrWhiteSpace(DateClosed))
+            if (!string.IsNullOrWhiteSpace(DateClosed))
             {
                 var (year, day) = SplitExcelDate(DateClosed);
                 await SelectDateClosedDateFromCalendarAsync(year, day);
@@ -328,10 +367,12 @@ namespace AutomationPermitPros.Pages
 
             if (!string.IsNullOrWhiteSpace(ManagementEntity))
                 await SelectManagementEntityDropDown(ManagementEntity);
+
             if (!string.IsNullOrWhiteSpace(categories))
                 await SelectCategoriesDropDown(categories);
+            
             if (!string.IsNullOrWhiteSpace(LocationDescription))
-                    await SelectLocationDescriptionFillAsync(LocationDescription);
+                await SelectLocationDescriptionFillAsync(LocationDescription);
             if (!string.IsNullOrWhiteSpace(AccountingNumber))
                 await AccountingNumberFillAsync(AccountingNumber);
             if (!string.IsNullOrWhiteSpace(notes))
@@ -341,6 +382,80 @@ namespace AutomationPermitPros.Pages
 
 
             await ClickCreate();
+        }
+
+
+       public async Task EditLocationAsync(
+           string? legalName = null,
+            string? locationNumber = null,
+            string? locationName = null,
+            string? ownerShip = null,
+            string? ParentEntity = null,
+            string? dateOpened = null,
+            string? AccountingNumber = null,
+            string? DateClosed = null,
+            string? State = null,
+            string? contactPhone = null,
+            string? contactEmail = null,
+            string? ManagementEntity = null,
+            string? categories = null,
+            string? LocationDescription = null,
+            string? notes = null,
+            bool? isActive = false
+           )
+        {  
+            if (!string.IsNullOrWhiteSpace(legalName))
+                await fillLegalNameAsync(legalName);
+            if (!string.IsNullOrWhiteSpace(locationNumber))
+                await fillLocationNumber(locationNumber);
+            if (!string.IsNullOrWhiteSpace(locationName))
+                await fillLocationName(locationName);
+            if (!string.IsNullOrWhiteSpace(ownerShip))
+                await fillOwnerShipAsync(ownerShip);
+            if (!string.IsNullOrWhiteSpace(dateOpened))
+            {
+                var (year, day) = SplitExcelDate(dateOpened);
+                await SelectDateOpenedDateFromCalendarAsync(year, day);
+            }
+            if (!string.IsNullOrWhiteSpace(DateClosed))
+            {
+                var (year, day) = SplitExcelDate(DateClosed);
+                await SelectDateClosedDateFromCalendarAsync(year, day);
+            }
+            if (!string.IsNullOrWhiteSpace(State))
+                await EditStateDropDown(State);
+
+            if (!string.IsNullOrWhiteSpace(contactPhone))
+                await contactPhoneFillAsync(contactPhone);
+
+            if (!string.IsNullOrWhiteSpace(contactEmail))
+                await contactEmailFillAsync(contactEmail);  
+
+            if(!string.IsNullOrWhiteSpace(ParentEntity))
+                await SelectParentEntityDropdown(ParentEntity);
+
+            if (!string.IsNullOrWhiteSpace(ManagementEntity))
+                await EditManagementEntityDropDown(ManagementEntity);
+
+            if (!string.IsNullOrWhiteSpace(categories))
+                await EditCategoriesDropDown(categories);
+
+
+            if (!string.IsNullOrWhiteSpace(LocationDescription))
+                await SelectLocationDescriptionFillAsync(LocationDescription);
+
+
+            if (!string.IsNullOrWhiteSpace(AccountingNumber))
+                await AccountingNumberFillAsync(AccountingNumber);
+
+            if (!string.IsNullOrWhiteSpace(notes))
+                await NotesFillsync(notes);
+
+            if (isActive.HasValue)
+                await IsActiveCheckBoxAsync(isActive.Value);
+           
+
+
         }
     }
 }

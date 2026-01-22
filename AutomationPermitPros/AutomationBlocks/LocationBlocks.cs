@@ -171,6 +171,35 @@ namespace AutomationPermitPros.AutomationBlocks
                 );
         }
 
+        public async Task EditAsync(Dictionary<string, string> data)
+        {
+            Console.WriteLine("Block: Edit Location record");
+            await Task.Delay(2000);
+            await _locationPage.LOC_Click_EditIcon() ;
+            await Task.Delay(2000);
+            await _locationPage.EditLocationAsync(
+                legalName: data.GetValueOrDefault("EditLegalName"),
+                locationNumber: data.GetValueOrDefault("EditLocationNumber"),
+                locationName: data.GetValueOrDefault("EditLocationName"),
+                ownerShip: data.GetValueOrDefault("EditOwnerShip%"),
+                ParentEntity: data.GetValueOrDefault("EditParentEntity"),
+                dateOpened: data.GetValueOrDefault("EditDateOpened"),
+                AccountingNumber: data.GetValueOrDefault("EditAccountingNumber"),
+                DateClosed: data.GetValueOrDefault("EditDateClosed"),
+                contactPhone: data.GetValueOrDefault("EditContactPhone"),
+                contactEmail: data.GetValueOrDefault("EditContactEmail"),
+                State: data.GetValueOrDefault("EditState"),
+                ManagementEntity: data.GetValueOrDefault("EditManagementEntity"),
+                categories: data.GetValueOrDefault("EditCategories"),
+                LocationDescription: data.GetValueOrDefault("EditLocationDescription"),
+                notes: data.GetValueOrDefault("EditNotes"),
+                isActive: ExcelHelper.IsTrue(data, "EditActive")
+                );
+
+            await _locationPage.LOC_Adv_Save();
+
+        }
+
 
         public async Task DeleteAsync(Dictionary<string, string> data)
         {
