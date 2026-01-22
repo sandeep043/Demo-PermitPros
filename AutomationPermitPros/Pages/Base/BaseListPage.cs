@@ -1,4 +1,5 @@
-﻿using Microsoft.Playwright;
+﻿using DocumentFormat.OpenXml.Spreadsheet;
+using Microsoft.Playwright;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -49,8 +50,8 @@ namespace AutomationPermitPros.Pages.Base
 
         protected ILocator DeleteModalMessage => _page.GetByText("There is no associated information");
 
-        private ILocator DeleteConfirmButton => _page.GetByRole(AriaRole.Button, new() { Name = "Delete" });
-        private ILocator DeleteModalTitle => _page.GetByText("Delete Business License");
+        private ILocator DeleteConfirmButton =>  _page.GetByRole(AriaRole.Button, new() { Name = "Yes" });
+        //private ILocator DeleteModalTitle => _page.GetByText("Delete Business License");
 
 
         public async Task ClickCreateNew()
@@ -272,11 +273,14 @@ namespace AutomationPermitPros.Pages.Base
 
             try
             {
+                await Model_DeleteIconButton.WaitForAsync(new LocatorWaitForOptions { State = WaitForSelectorState.Visible });
                 await Model_DeleteIconButton.ClickAsync();
+               
                 return true;
             }
-            catch
+            catch(Exception ex)
             {
+                Console.WriteLine($"Delete icon click failed: {ex.Message}");
                 return false;
             }
 
@@ -327,26 +331,26 @@ namespace AutomationPermitPros.Pages.Base
 
         //public async Task EnterDeletionReason(string reason)
         //{
-        //    await DeleteReasonTextarea.FillAsync(reason); 
+        //    await DeleteReasonTextarea.FillAsync(reason);
         //}
 
 
-        public async Task<bool> IsDeleteModalVisible()
-        {
-            try
-            {
-                await DeleteModalTitle.WaitForAsync(new LocatorWaitForOptions
-                {
-                    State = WaitForSelectorState.Visible,
-                    Timeout = 5000
-                });
-                return await DeleteModalTitle.IsVisibleAsync();
-            }
-            catch
-            {
-                return false;
-            }
-        }
+        //public async Task<bool> IsDeleteModalVisible()
+        //{
+        //    try
+        //    {
+        //        await DeleteModalTitle.WaitForAsync(new LocatorWaitForOptions
+        //        {
+        //            State = WaitForSelectorState.Visible,
+        //            Timeout = 5000
+        //        });
+        //        return await DeleteModalTitle.IsVisibleAsync();
+        //    }
+        //    catch
+        //    {
+        //        return false;
+        //    }
+        //}
 
         public async Task<bool> EnterDeletionReason(string reason)
         {

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using AutomationPermitPros.Pages;
@@ -76,7 +77,6 @@ namespace AutomationPermitPros.AutomationBlocks
                 return false;
             }
         }
-
 
         public async Task<bool> BUSLIC_SELECT_LOCATION(string location)
         {
@@ -189,7 +189,7 @@ namespace AutomationPermitPros.AutomationBlocks
             try
             {
                 await _businessPage.ClickSearch();
-                
+
                 return true;
             }
             catch
@@ -296,8 +296,16 @@ namespace AutomationPermitPros.AutomationBlocks
         {
             try
             {
+
+
                 // Step 1: Click delete icon
+                await Task.Delay(2000);
                 var deleteIconClicked = await _businessPage.BUSLIC_Click_DeleteIcon();
+
+               
+                await Task.Delay(2000);
+
+
                 if (!deleteIconClicked)
                 {
                     Console.WriteLine("Block Failed: Could not click delete icon");
@@ -308,7 +316,7 @@ namespace AutomationPermitPros.AutomationBlocks
 
 
                 // Step 2: Wait for modal to appear
-                    await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+                await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
                 var isModalVisible = await _businessPage.BUSLIC_IsDeleteModelVisible();
                 if (!isModalVisible)
                 {
@@ -316,16 +324,17 @@ namespace AutomationPermitPros.AutomationBlocks
                     return false;
                 }
 
-                // Step 3: Enter deletion reason
-                var reasonEntered = await _businessPage.BUSLIC_EnterDeletionReason(deletionReason);
-                if (!reasonEntered)
-                {
-                    Console.WriteLine("Block Failed: Could not enter deletion reason");
-                    return false;
-                }
+                //// Step 3: Enter deletion reason
+                //var reasonEntered = await _businessPage.BUSLIC_EnterDeletionReason(deletionReason);
+                //if (!reasonEntered)
+                //{
+                //    Console.WriteLine("Block Failed: Could not enter deletion reason");
+                //    return false;
+                //}
 
                 // Step 4: Confirm deletion
                 var deleteConfirmed = await _businessPage.BUSLIC_ConfirmDelete();
+                await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
                 if (!deleteConfirmed)
                 {
                     Console.WriteLine("Block Failed: Could not confirm deletion");
@@ -349,14 +358,33 @@ namespace AutomationPermitPros.AutomationBlocks
         {
             try
             {
-                // Look for a table row containing the license number
-                var row = _page.Locator($"//tr[contains(.,'{licenseNumber}')]");
+                // Wait for table or results area to load
+                await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
-                // Check if the row is visible
-                bool isVisible = await row.IsVisibleAsync();
+                // Target only table BODY rows
+                var rows = _page.Locator("table tbody tr");
 
-                Console.WriteLine($"License {licenseNumber} exists in search results: {isVisible}");
-                return isVisible;
+                int rowCount = await rows.CountAsync();
+                if (rowCount == 0)
+                {
+                    Console.WriteLine("No rows found in search results");
+                    return false;
+                }
+
+                // Check each row for the license number
+                for (int i = 0; i < rowCount; i++)
+                {
+                    string rowText = await rows.Nth(i).InnerTextAsync();
+
+                    if (rowText.Contains(licenseNumber, StringComparison.OrdinalIgnoreCase))
+                    {
+                        Console.WriteLine($"License {licenseNumber} exists in search results");
+                        return true;
+                    }
+                }
+
+                Console.WriteLine($"License {licenseNumber} NOT found in search results");
+                return false;
             }
             catch (Exception ex)
             {
@@ -364,7 +392,156 @@ namespace AutomationPermitPros.AutomationBlocks
                 return false;
             }
         }
+
+
+        //Business License Action Methods-------------------
+
+        public async Task FillRenewalDateFromExcelAsync(Dictionary<string, string> data)
+        {
+            if (!data.TryGetValue("RenewalYear", out var year) ||
+                !data.TryGetValue("RenewalDay", out var day) ||
+                string.IsNullOrWhiteSpace(year) ||
+                string.IsNullOrWhiteSpace(day))
+            {
+                Console.WriteLine("Renewal Date skipped (no Excel data)");
+                return;
+            }
+
+            await _businessPage.SelectRenewalDateFromCalendarAsync(year, day);
+        }
+
+        public async Task FillExpirationDateFromExcelAsync(Dictionary<string, string> data)
+        {
+            if (!data.TryGetValue("ExpirationYear", out var year) ||
+                !data.TryGetValue("ExpirationDay", out var day) ||
+                string.IsNullOrWhiteSpace(year) ||
+                string.IsNullOrWhiteSpace(day))
+            {
+                Console.WriteLine("Expiration Date skipped (no Excel data)");
+                return;
+            }
+
+            await _businessPage.SelectExperitionDateFromCalendarAsync(year, day);
+        }
+
+        public async Task SearchAsync(Dictionary<string, string> data)
+        {
+            Console.WriteLine("Block: Search Business License");
+
+            //if (data.TryGetValue("Search_LocationName", out var location) &&
+            //    !string.IsNullOrWhiteSpace(location))
+            //{
+            //    await _businessPage.FillLocationNameAsync(location);
+            //}
+
+            //if (data.TryGetValue("Search_LicenseNumber", out var licenseNumber) &&
+            //    !string.IsNullOrWhiteSpace(licenseNumber))
+            //{
+            //    await _businessPage.FillLicenseNumberAsync(licenseNumber);
+            //}
+
+            //if (data.TryGetValue("Search_LicenseType", out var licenseType) && !string.IsNullOrWhiteSpace(licenseNumber))
+
+
+            //    await _businessPage.ClickSearch();
+            await _businessPage.SearchBusinessLicenseAsync(
+                locationName: data.GetValueOrDefault("Search_LocationName"),
+                licenseNumber: data.GetValueOrDefault("Search_LicenseNumber"),
+                licenseType: data.GetValueOrDefault("Search_LicenseType"),
+                locationNumber: data.GetValueOrDefault("Search_LocationNumber"),
+                state: data.GetValueOrDefault("Search_State")
+                );
+        }
+
+        public async Task CreateAsync(Dictionary<string, string> data)
+        {
+            Console.WriteLine("Block: Create Business License");
+
+            // Go to create page
+            await _businessPage.ClickCreateNew();
+            await _businessPage.IsCreatePageLoaded();
+
+            // Fill form (Excel-driven)
+            await _businessPage.CreateBusinessLicenseAsync(
+                location: data.GetValueOrDefault("Location"),
+                agency: data.GetValueOrDefault("Agency"),
+                licenseNumber: data.GetValueOrDefault("LicenseNumber"),
+                licenseType: data.GetValueOrDefault("LicenseType"),
+                expirationDate: data.GetValueOrDefault("ExpirationDate"),
+                renewalDate: data.GetValueOrDefault("RenewalDate"),
+                description: data.GetValueOrDefault("Description"),
+                notes: data.GetValueOrDefault("Notes"),
+                licenseReceivedDate: data.GetValueOrDefault("LicenseReceivedDate"),
+                 dateIssued: data.GetValueOrDefault("DateIssued"),
+                 effectiveDate: data.GetValueOrDefault("EffectiveDate"),
+                 applicationRenewalSentDate: data.GetValueOrDefault("ApplicationRenewalSentDate"),
+                 renewalAppReceivedDate: data.GetValueOrDefault("RenewalAppReceivedDate"),
+                 escrowStatusId: data.GetValueOrDefault("EscrowStatusID"),
+                 prevEscrowStatusId: data.GetValueOrDefault("PrevEscrowStatusID"),
+                 previousEscrowStatusDate: data.GetValueOrDefault("PreviousEscrowStatusDate")
+            );
+        }
+
+
+        public async Task EditAsync(Dictionary<string, string> data)
+        {
+            Console.WriteLine("Block: Edit Business License");
+
+            await _businessPage.BUSLIC_Click_EditIcon();
+            
+
+            if (data.ContainsKey("LicenseType"))
+                await _businessPage.EditSelectLocationAsync(data["LicenseType"]);
+            await _businessPage.BUSLIC_Adv_Save();
+        }
+
+
+        public async Task DeleteAsync(Dictionary<string, string> data)
+        {
+            Console.WriteLine("Block: Delete Business License");
+
+
+            var reason = data.GetValueOrDefault("Delete_Reason") ?? "Automation Delete";
+            await BUSLIC_Block_DeleteWithReason(reason);
+        } 
+
+        public async Task ViewAsync()
+        {
+            Console.WriteLine("Block: View Business License");
+            await Task.Delay(2000);
+            await _businessPage.BUSLIC_Click_ViewIcon();
+        }
+
+        //validate Create Success Message
+
+        public async Task<string> GetToastMessageAsync()
+        {
+            var toast = _page.GetByRole(AriaRole.Alert);
+
+            //Wait until toast appears
+            await toast.WaitForAsync(new() { Timeout = 5000 });
+
+            return (await toast.InnerTextAsync()).Trim();
+        }
+
+
+        public async Task ReloadAsync()
+        {
+            await _page.ReloadAsync();
+            await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+        }
     }
 }
+
+
+
+
+
+
+
+
+
+
+
 
 
