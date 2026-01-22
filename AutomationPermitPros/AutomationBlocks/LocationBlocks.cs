@@ -30,6 +30,109 @@ namespace AutomationPermitPros.AutomationBlocks
             return (await toast.InnerTextAsync()).Trim();
         }
 
+
+        public async Task<bool> BUSLIC_Block_DeleteWithReason(string deletionReason)
+        {
+            try
+            {
+                // Step 1: Click delete icon
+                await Task.Delay(2000);
+                var deleteIconClicked = await _locationPage.BUSLIC_Click_DeleteIcon();
+
+
+                await Task.Delay(2000);
+
+
+                if (!deleteIconClicked)
+                {
+                    Console.WriteLine("Block Failed: Could not click delete icon");
+                    return false;
+                }
+
+                await _locationPage.BUSLIC_Adv_Delete();
+
+
+                // Step 2: Wait for modal to appear
+                await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+                var isModalVisible = await _locationPage.BUSLIC_IsDeleteModelVisible();
+                if (!isModalVisible)
+                {
+                    Console.WriteLine("Block Failed: Delete modal did not appear");
+                    return false;
+                }
+
+                //// Step 3: Enter deletion reason
+                //var reasonEntered = await _businessPage.BUSLIC_EnterDeletionReason(deletionReason);
+                //if (!reasonEntered)
+                //{
+                //    Console.WriteLine("Block Failed: Could not enter deletion reason");
+                //    return false;
+                //}
+
+                // Step 4: Confirm deletion
+                var deleteConfirmed = await _locationPage.BUSLIC_ConfirmDelete();
+                await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+                if (!deleteConfirmed)
+                {
+                    Console.WriteLine("Block Failed: Could not confirm deletion");
+                    return false;
+                }
+
+                // Step 5: Wait for deletion to complete
+                await Task.Delay(2000);
+
+                Console.WriteLine("Block Success: License deleted with reason");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Block Exception: {ex.Message}");
+                return false;
+            }
+        }
+
+
+        public async Task<bool> LOCATION_VerifySearchResultExists(string licenseNumber)
+        {
+            try
+            {
+                // Wait for table or results area to load
+                await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+
+                // Target only table BODY rows
+                var rows = _page.Locator("table tbody tr");
+
+                int rowCount = await rows.CountAsync();
+                if (rowCount == 0)
+                {
+                    Console.WriteLine("No rows found in search results");
+                    return false;
+                }
+
+                // Check each row for the license number
+                for (int i = 0; i < rowCount; i++)
+                {
+                    string rowText = await rows.Nth(i).InnerTextAsync();
+
+                    if (rowText.Contains(licenseNumber, StringComparison.OrdinalIgnoreCase))
+                    {
+                        Console.WriteLine($"License {licenseNumber} exists in search results");
+                        return true;
+                    }
+                }
+
+                Console.WriteLine($"License {licenseNumber} NOT found in search results");
+                return false;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error verifying search result: {ex.Message}");
+                return false;
+            }
+        }
+
+
+
         public async Task CreateAsync(Dictionary<string, string> data)
         {
             Console.WriteLine("-----------------Creating Location------------------------");
@@ -67,6 +170,19 @@ namespace AutomationPermitPros.AutomationBlocks
                 state: data.GetValueOrDefault("Search_State")
                 );
         }
+
+
+        public async Task DeleteAsync(Dictionary<string, string> data)
+        {
+            Console.WriteLine("Block: Delete Location record");
+
+
+            var reason = data.GetValueOrDefault("Delete_Reason") ?? "Automation Delete";
+            await BUSLIC_Block_DeleteWithReason(reason);
+        }
+
+
+
         public async Task ReloadAsync()
         {
             await _page.ReloadAsync();
