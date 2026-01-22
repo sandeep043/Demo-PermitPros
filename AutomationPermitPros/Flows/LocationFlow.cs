@@ -105,6 +105,80 @@ namespace AutomationPermitPros.Flows
                     Assert.Fail($"Unknown ExpectedOutcome '{expectedOutcome}' in Excel");
                 }
             }
+
+
+            if (ExcelHelper.IsTrue(data, "Delete"))
+            {
+                Console.WriteLine("Flow: DELETE");
+                await _block.SearchAsync(data);
+
+                await _block.DeleteAsync(data);
+
+                Console.WriteLine("Flow: VALIDATE DELETE");
+
+                string expectedOutcome = data["ExpectedOutcome"];
+                string expectedMessage = data["ExpectedMessage"];
+
+                string actualMessage = await _block.GetToastMessageAsync();
+
+                Assert.IsNotNull(actualMessage, "Expected a toast message after delete, but none appeared");
+
+                if (expectedOutcome.Equals("SUCCESS", StringComparison.OrdinalIgnoreCase))
+                {
+                    //Validate success message
+                    Assert.That(
+                        actualMessage,
+                        Does.Contain(expectedMessage).IgnoreCase,
+                        $"Expected SUCCESS delete message '{expectedMessage}' but got '{actualMessage}'"
+                    );
+
+                    //Validate record is really deleted
+
+                    bool existsBeforeDelete = await  _block.LOCATION_VerifySearchResultExists(
+                        data["Search_LicenseNumber"]
+                    );
+
+                    Assert.IsTrue(
+                        existsBeforeDelete,
+                        "Record does not exist before delete operation"
+                    );
+
+                    bool exists = await _block.LOCATION_VerifySearchResultExists(
+                        data["Search_LicenseNumber"]
+                    );
+
+                    Assert.IsFalse(
+                        exists,
+                        "Record still exists in search results after successful delete"
+                    );
+                }
+                else if (expectedOutcome.Equals("ERROR", StringComparison.OrdinalIgnoreCase))
+                {
+                    //Validate error message
+                    Assert.That(
+                        actualMessage,
+                        Does.Contain(expectedMessage).IgnoreCase,
+                        $"Expected ERROR delete message '{expectedMessage}' but got '{actualMessage}'"
+                    );
+
+                    bool exists = await _block.LOCATION_VerifySearchResultExists(
+                        data["Search_LocationNumber"]
+                    );
+
+                    Assert.IsTrue(
+                        exists,
+                        "Record does NOT exist even though delete failed"
+                    );
+                }
+                else
+                {
+                    Assert.Fail($"Unknown ExpectedOutcome '{expectedOutcome}' in Excel");
+                }
             }
+
+
+
+
+        }
         }
 }
