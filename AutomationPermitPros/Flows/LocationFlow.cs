@@ -105,7 +105,7 @@ namespace AutomationPermitPros.Flows
                     Assert.Fail($"Unknown ExpectedOutcome '{expectedOutcome}' in Excel");
                 }
             }
-
+            //-----------------Delete Flow--------------------- 
 
 
             if (ExcelHelper.IsTrue(data, "Edit"))
@@ -143,17 +143,17 @@ namespace AutomationPermitPros.Flows
 
                     //Validate record is really deleted
 
-                    bool existsBeforeDelete = await  _block.LOCATION_VerifySearchResultExists(
-                        data["Search_LicenseNumber"]
-                    );
+                    //bool existsBeforeDelete = await  _block.LOCATION_VerifySearchResultExists(
+                    //    data["Search_LocationNumber"]
+                    //);
 
-                    Assert.IsTrue(
-                        existsBeforeDelete,
-                        "Record does not exist before delete operation"
-                    );
+                    //Assert.IsTrue(
+                    //    existsBeforeDelete,
+                    //    "Record does not exist before delete operation"
+                    //);
 
                     bool exists = await _block.LOCATION_VerifySearchResultExists(
-                        data["Search_LicenseNumber"]
+                        data["Search_LocationNumber"]
                     );
 
                     Assert.IsFalse(
@@ -185,7 +185,13 @@ namespace AutomationPermitPros.Flows
                 }
             }
 
+            if (ExcelHelper.IsTrue(data, "View"))
+            {
+                await _block.SearchAsync(data);
 
+                Console.WriteLine("Flow: VIEW");
+                await _block.ViewAsync();
+            }
 
 
         }
