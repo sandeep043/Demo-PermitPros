@@ -120,6 +120,7 @@ namespace AutomationPermitPros.Flows
             if (ExcelHelper.IsTrue(data, "Edit"))
             {
                 Console.WriteLine("Flow: EDIT");
+                await _block.SearchAsync(data);
                 await _block.EditAsync(data);
             }
 

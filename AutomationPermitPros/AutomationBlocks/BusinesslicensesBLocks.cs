@@ -486,12 +486,31 @@ namespace AutomationPermitPros.AutomationBlocks
         public async Task EditAsync(Dictionary<string, string> data)
         {
             Console.WriteLine("Block: Edit Business License");
+            await Task.Delay(2000);
 
             await _businessPage.BUSLIC_Click_EditIcon();
-            
+            await Task.Delay(2000);
 
-            if (data.ContainsKey("LicenseType"))
-                await _businessPage.EditSelectLocationAsync(data["LicenseType"]);
+            await _businessPage.EditBusinessLicenseAsync(location: data.GetValueOrDefault("EditLocation"),
+                agency: data.GetValueOrDefault("EditAgency"),
+                licenseNumber: data.GetValueOrDefault("EditLicenseNumber"),
+                licenseType: data.GetValueOrDefault("EditLicenseType"),
+                expirationDate: data.GetValueOrDefault("EditExpirationDate"),
+                renewalDate: data.GetValueOrDefault("EditRenewalDate"),
+                description: data.GetValueOrDefault("EditDescription"),
+                notes: data.GetValueOrDefault("EditNotes"),
+                licenseReceivedDate: data.GetValueOrDefault("EditLicenseReceivedDate"),
+                 dateIssued: data.GetValueOrDefault("EditDateIssued"),
+                 effectiveDate: data.GetValueOrDefault("EditEffectiveDate"),
+                 applicationRenewalSentDate: data.GetValueOrDefault("EditApplicationRenewalSentDate"),
+                 renewalAppReceivedDate: data.GetValueOrDefault("EditRenewalAppReceivedDate"),
+                 escrowStatusId: data.GetValueOrDefault("EditEscrowStatusID"),
+                 prevEscrowStatusId: data.GetValueOrDefault("EditPrevEscrowStatusID"),
+                 previousEscrowStatusDate: data.GetValueOrDefault("EditPreviousEscrowStatusDate"));
+
+
+            //if (data.ContainsKey("LicenseType"))
+            //    await _businessPage.EditSelectLocationAsync(data["LicenseType"]);
             await _businessPage.BUSLIC_Adv_Save();
         }
 

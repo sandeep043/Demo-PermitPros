@@ -67,7 +67,7 @@ private ILocator PageHeader => _page.GetByRole(AriaRole.Heading, new() { Name = 
         private ILocator AgencySelectInput => _page.GetByRole(AriaRole.Combobox, new() { Name = "Default select example" }).Nth(1);
         private ILocator LicenseTypeSelectInput => _page.GetByRole(AriaRole.Combobox, new() { Name = "Default select example" }).Nth(2);
 
-        private ILocator EditLicenseTypeSelectInput => _page.Locator("#react-select-4-input");
+       
 
         // State <select> as combobox
         private ILocator StateDropdown => _page.GetByRole(AriaRole.Combobox, new() { Name = "State" });
@@ -83,7 +83,12 @@ private ILocator PageHeader => _page.GetByRole(AriaRole.Heading, new() { Name = 
         private ILocator EscrowStatusIdInput => _page.GetByPlaceholder("Enter Escrow Status ID");
         private ILocator PrevEscrowStatusIdInput => _page.GetByPlaceholder("Enter Prev Escrow Status ID");
 
-      // Search List Tast Methods 
+
+        //Edit ILocators 
+        private ILocator EditLoactionName => _page.Locator(".css-1xc3v61-indicatorContainer").First;
+        private ILocator EditAgencyName => _page.Locator("div:nth-child(3) > .custom-form-react-select > .css-1fl0wyi-control > .css-1wy0on6 > .css-1xc3v61-indicatorContainer > .css-8mmkcg");
+
+        // Search List Tast Methods 
 
         public async Task SearchFillLocationNumberAsync(string value)
         {
@@ -243,14 +248,14 @@ private ILocator PageHeader => _page.GetByRole(AriaRole.Heading, new() { Name = 
 
         public async Task EditSelectLocationAsync(string locationLabel)
         {
-            var input = EditLicenseTypeSelectInput;
+            var input = EditLoactionName;
 
 
             // 1️⃣ Open dropdown
             await input.ClickAsync();
 
             // 2️⃣ Type filter text
-            await input.FillAsync(locationLabel);
+            await _page.Keyboard.TypeAsync(locationLabel);
 
             // 3️⃣ WAIT for at least one option to appear (CRITICAL)
             var firstOption = _page.GetByRole(AriaRole.Option).First;
@@ -264,6 +269,20 @@ private ILocator PageHeader => _page.GetByRole(AriaRole.Heading, new() { Name = 
             //var selectedValue = await input.InputValueAsync();
             //if (string.IsNullOrWhiteSpace(selectedValue))
             //    throw new Exception("Location was not selected.");
+        }
+
+        public async Task EditAgencyAsync(string agencyLabel)
+        {
+            var input = EditAgencyName;
+            // 1️⃣ Open dropdown
+            await input.ClickAsync();
+            // 2️⃣ Type filter text
+            await _page.Keyboard.TypeAsync(agencyLabel);
+            // 3️⃣ WAIT for at least one option to appear (CRITICAL)
+            var firstOption = _page.GetByRole(AriaRole.Option).First;
+            await firstOption.WaitForAsync(new() { Timeout = 5000 });
+            // 4️⃣ Click first option explicitly
+            await firstOption.ClickAsync();
         }
 
         public async Task SelectAgencyAsync(string agencyLabel)
@@ -675,26 +694,72 @@ private ILocator PageHeader => _page.GetByRole(AriaRole.Heading, new() { Name = 
                 await EditSelectLocationAsync(location);
             if (!string.IsNullOrWhiteSpace(licenseType))
                 await SelectLicenseTypeAsync(licenseType);
+
+
             if (!string.IsNullOrWhiteSpace(expirationDate))
-                await FillExpirationDateAsync(expirationDate);
+            {
+                var (year, day) = SplitExcelDate(expirationDate);
+                await SelectExperitionDateFromCalendarAsync(year, day);
+
+            }
+                //await FillExpirationDateAsync(expirationDate);
             if (!string.IsNullOrWhiteSpace(agency))
-                await SelectAgencyAsync(agency);
+                await EditAgencyAsync(agency);
+
             if (!string.IsNullOrWhiteSpace(licenseNumber))
                 await FillLicenseNumberAsync(licenseNumber);
+
             if (!string.IsNullOrWhiteSpace(description))
                 await FillDescriptionAsync(description);
+
             if (!string.IsNullOrWhiteSpace(escrowStatusId))
                 await FillEscrowStatusIdAsync(escrowStatusId);
+
             if (!string.IsNullOrWhiteSpace(prevEscrowStatusId))
                 await FillPrevEscrowStatusIdAsync(prevEscrowStatusId);
+
             if (!string.IsNullOrWhiteSpace(notes))
                 await FillNotesAsync(notes);
+
             if (!string.IsNullOrWhiteSpace(licenseReceivedDate))
-                await FillLicenseReceivedDateAsync(licenseReceivedDate);
+            {
+                var (year, day) = SplitExcelDate(licenseReceivedDate);
+                await SelectLicenseReceivedDateAsync(year, day);
+            }
+               
             if (!string.IsNullOrWhiteSpace(renewalDate))
-                await FillRenewalDateAsync(renewalDate);
+            {  
+                var (year, day) = SplitExcelDate(renewalDate);
+                await SelectRenewalDateFromCalendarAsync(year, day);
+            }
+          
+               
             if (!string.IsNullOrWhiteSpace(dateIssued))
-                await FillDateIssuedAsync(dateIssued);
+            { 
+                var (year, day) = SplitExcelDate(dateIssued);
+                await SelectDateIssuedFromCalendaryAsync(year, day);
+
+            }
+           if(!string.IsNullOrWhiteSpace(effectiveDate))
+            {
+                var (year, day) = SplitExcelDate(effectiveDate);
+                await SelectEffectiveDateFromCalendaryAsync(year, day);
+            }
+            if (!string.IsNullOrWhiteSpace(renewalAppReceivedDate))
+            {
+                var (year, day) = SplitExcelDate(renewalAppReceivedDate);
+                await SelectRenewalAppReceivedDateFromCalendarAsync(year, day);
+            }
+            if (!string.IsNullOrWhiteSpace(applicationRenewalSentDate))
+            {
+                var (year, day) = SplitExcelDate(applicationRenewalSentDate);
+                await SelectApplicationRenewalSentDateFromCalendaryAsync(year, day);
+            }
+            if (!string.IsNullOrWhiteSpace(previousEscrowStatusDate))
+            {
+                var (year, day) = SplitExcelDate(previousEscrowStatusDate);
+                await SelectPreviousEscrowStatusDateFromCalendaryAsync(year, day);
+            }
 
 
         }
