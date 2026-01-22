@@ -140,8 +140,10 @@ namespace AutomationPermitPros.Pages
             await select.SelectOptionAsync(new SelectOptionValue { Label = parentEntity });
             //press enter 
             //await _page.Keyboard.PressAsync("Enter");
-
         }
+
+
+
 
         public async Task SelectDateOpenedDateFromCalendarAsync(
       string year,
@@ -223,6 +225,35 @@ namespace AutomationPermitPros.Pages
 
             return (date.Year.ToString(), date.Day.ToString());
         }
+
+        //Delete Location Method 
+        public async Task<bool> BUSLIC_Click_DeleteIcon()
+        {
+            return await _baseListpage.Click_DeleteIcon();
+        }
+
+        public async Task<bool> BUSLIC_Adv_Delete()
+        {
+            return await _baseListpage.Adv_Delete();
+        }
+        public async Task<bool> BUSLIC_IsDeleteModelVisible()
+        {
+            return await _baseListpage.IsDeleteModalVisible();
+        }
+        public async Task<bool> BUSLIC_ConfirmDelete()
+        {
+            return await _baseListpage.ConfirmDelete();
+        }
+
+
+
+
+
+
+
+
+
+
 
 
         public async Task SearchBusinessLicenseAsync(
