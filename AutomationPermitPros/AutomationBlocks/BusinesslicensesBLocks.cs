@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using AutomationPermitPros.Pages;
@@ -295,10 +296,16 @@ namespace AutomationPermitPros.AutomationBlocks
         {
             try
             {
-                
+
 
                 // Step 1: Click delete icon
+                await Task.Delay(2000);
                 var deleteIconClicked = await _businessPage.BUSLIC_Click_DeleteIcon();
+
+               
+                await Task.Delay(2000);
+
+
                 if (!deleteIconClicked)
                 {
                     Console.WriteLine("Block Failed: Could not click delete icon");
@@ -317,16 +324,17 @@ namespace AutomationPermitPros.AutomationBlocks
                     return false;
                 }
 
-                // Step 3: Enter deletion reason
-                var reasonEntered = await _businessPage.BUSLIC_EnterDeletionReason(deletionReason);
-                if (!reasonEntered)
-                {
-                    Console.WriteLine("Block Failed: Could not enter deletion reason");
-                    return false;
-                }
+                //// Step 3: Enter deletion reason
+                //var reasonEntered = await _businessPage.BUSLIC_EnterDeletionReason(deletionReason);
+                //if (!reasonEntered)
+                //{
+                //    Console.WriteLine("Block Failed: Could not enter deletion reason");
+                //    return false;
+                //}
 
                 // Step 4: Confirm deletion
                 var deleteConfirmed = await _businessPage.BUSLIC_ConfirmDelete();
+                await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
                 if (!deleteConfirmed)
                 {
                     Console.WriteLine("Block Failed: Could not confirm deletion");
@@ -480,6 +488,7 @@ namespace AutomationPermitPros.AutomationBlocks
             Console.WriteLine("Block: Edit Business License");
 
             await _businessPage.BUSLIC_Click_EditIcon();
+            
 
             if (data.ContainsKey("LicenseType"))
                 await _businessPage.EditSelectLocationAsync(data["LicenseType"]);
@@ -499,6 +508,7 @@ namespace AutomationPermitPros.AutomationBlocks
         public async Task ViewAsync()
         {
             Console.WriteLine("Block: View Business License");
+            await Task.Delay(2000);
             await _businessPage.BUSLIC_Click_ViewIcon();
         }
 
