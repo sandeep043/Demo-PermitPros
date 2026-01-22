@@ -35,6 +35,8 @@ namespace AutomationPermitPros.Pages
         private ILocator SearchLocationNameInput => _page.GetByRole(AriaRole.Textbox, new() { Name = "Enter Location Name" });
         private ILocator SearchLicenseNumberInput => _page.GetByRole(AriaRole.Textbox, new() { Name = "Enter License Number" });
 
+        private ILocator DeleteModalTitle => _page.GetByText("Delete Business License");
+
         private ILocator SearchLicenseTypeDropdown => _page.GetByRole(AriaRole.Combobox).First;
 
         private ILocator SearchStateDropdown => _page.GetByRole(AriaRole.Combobox).Nth(1);
@@ -756,6 +758,23 @@ private ILocator PageHeader => _page.GetByRole(AriaRole.Heading, new() { Name = 
             return await _baseListPage.ExportToExcel();
         }
 
+        public async Task<bool> IsDeleteModalVisible()
+        {
+            try
+            {
+                await DeleteModalTitle.WaitForAsync(new LocatorWaitForOptions
+                {
+                    State = WaitForSelectorState.Visible,
+                    Timeout = 5000
+                });
+                return await DeleteModalTitle.IsVisibleAsync();
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
         // Expose generic sort from BaseListPage for this page
         public async Task<bool> SortColumnAsync(string columnLabel, bool ascending = true)
         {
@@ -764,7 +783,7 @@ private ILocator PageHeader => _page.GetByRole(AriaRole.Heading, new() { Name = 
 
         public async Task<bool> BUSLIC_IsDeleteModelVisible()
         {
-            return await _baseListPage.IsDeleteModalVisible();
+            return await IsDeleteModalVisible();
         }
 
         public async Task<bool> BUSLIC_EnterDeletionReason(string reason)
@@ -796,5 +815,7 @@ private ILocator PageHeader => _page.GetByRole(AriaRole.Heading, new() { Name = 
         {
             return await _page.GetByRole(AriaRole.Alert).IsVisibleAsync();
         }
+
+
     }
 }

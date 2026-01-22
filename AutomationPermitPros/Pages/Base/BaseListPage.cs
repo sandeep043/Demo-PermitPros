@@ -51,7 +51,7 @@ namespace AutomationPermitPros.Pages.Base
         protected ILocator DeleteModalMessage => _page.GetByText("There is no associated information");
 
         private ILocator DeleteConfirmButton =>  _page.GetByRole(AriaRole.Button, new() { Name = "Yes" });
-        private ILocator DeleteModalTitle => _page.GetByText("Delete Business License");
+        //private ILocator DeleteModalTitle => _page.GetByText("Delete Business License");
 
 
         public async Task ClickCreateNew()
@@ -331,26 +331,26 @@ namespace AutomationPermitPros.Pages.Base
 
         //public async Task EnterDeletionReason(string reason)
         //{
-        //    await DeleteReasonTextarea.FillAsync(reason); 
+        //    await DeleteReasonTextarea.FillAsync(reason);
         //}
 
 
-        public async Task<bool> IsDeleteModalVisible()
-        {
-            try
-            {
-                await DeleteModalTitle.WaitForAsync(new LocatorWaitForOptions
-                {
-                    State = WaitForSelectorState.Visible,
-                    Timeout = 5000
-                });
-                return await DeleteModalTitle.IsVisibleAsync();
-            }
-            catch
-            {
-                return false;
-            }
-        }
+        //public async Task<bool> IsDeleteModalVisible()
+        //{
+        //    try
+        //    {
+        //        await DeleteModalTitle.WaitForAsync(new LocatorWaitForOptions
+        //        {
+        //            State = WaitForSelectorState.Visible,
+        //            Timeout = 5000
+        //        });
+        //        return await DeleteModalTitle.IsVisibleAsync();
+        //    }
+        //    catch
+        //    {
+        //        return false;
+        //    }
+        //}
 
         public async Task<bool> EnterDeletionReason(string reason)
         {

@@ -31,7 +31,7 @@ namespace AutomationPermitPros.AutomationBlocks
         }
 
 
-        public async Task<bool> BUSLIC_Block_DeleteWithReason(string deletionReason)
+        public async Task<bool> Location_Block_DeleteWithReason(string deletionReason)
         {
             try
             {
@@ -54,7 +54,7 @@ namespace AutomationPermitPros.AutomationBlocks
 
                 // Step 2: Wait for modal to appear
                 await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
-                var isModalVisible = await _locationPage.BUSLIC_IsDeleteModelVisible();
+                var isModalVisible = await _locationPage.location_IsDeleteModelVisible();
                 if (!isModalVisible)
                 {
                     Console.WriteLine("Block Failed: Delete modal did not appear");
@@ -174,11 +174,21 @@ namespace AutomationPermitPros.AutomationBlocks
 
         public async Task DeleteAsync(Dictionary<string, string> data)
         {
-            Console.WriteLine("Block: Delete Location record");
+            Console.WriteLine("Block: Delete Location r");
 
 
             var reason = data.GetValueOrDefault("Delete_Reason") ?? "Automation Delete";
-            await BUSLIC_Block_DeleteWithReason(reason);
+            await Location_Block_DeleteWithReason(reason);
+        }
+
+
+        //view
+
+        public async Task ViewAsync()
+        {
+            Console.WriteLine("Block: View Business License");
+            await Task.Delay(2000);
+            await _locationPage.BUSLIC_Click_ViewIcon();
         }
 
 

@@ -44,6 +44,8 @@ namespace AutomationPermitPros.Pages
 
         private ILocator CreateParentEntity =>_page.Locator("select");
 
+        private ILocator DeleteModalTitle => _page.GetByText("Delete Location");
+
 
 
 
@@ -75,6 +77,9 @@ namespace AutomationPermitPros.Pages
             await select.SelectOptionAsync(new[] { stateLabel });
 
             await select.WaitForAsync(new() { Timeout = 2000 });
+
+            //delete
+                 
         }
 
         //Create Location Form fill Methods
@@ -140,7 +145,10 @@ namespace AutomationPermitPros.Pages
             await select.SelectOptionAsync(new SelectOptionValue { Label = parentEntity });
             //press enter 
             //await _page.Keyboard.PressAsync("Enter");
-        }
+        } 
+
+
+
 
 
 
@@ -227,6 +235,23 @@ namespace AutomationPermitPros.Pages
         }
 
         //Delete Location Method 
+
+        public async Task<bool> IsDeleteModalVisible()
+        {
+            try
+            {
+                await DeleteModalTitle.WaitForAsync(new LocatorWaitForOptions
+                {
+                    State = WaitForSelectorState.Visible,
+                    Timeout = 5000
+                });
+                return await DeleteModalTitle.IsVisibleAsync();
+            }
+            catch
+            {
+                return false;
+            }
+        }
         public async Task<bool> BUSLIC_Click_DeleteIcon()
         {
             return await _baseListpage.Click_DeleteIcon();
@@ -236,25 +261,21 @@ namespace AutomationPermitPros.Pages
         {
             return await _baseListpage.Adv_Delete();
         }
-        public async Task<bool> BUSLIC_IsDeleteModelVisible()
+        public async Task<bool> location_IsDeleteModelVisible()
         {
-            return await _baseListpage.IsDeleteModalVisible();
+            return await IsDeleteModalVisible();
         }
         public async Task<bool> BUSLIC_ConfirmDelete()
         {
             return await _baseListpage.ConfirmDelete();
         }
 
+        //view Methods
 
-
-
-
-
-
-
-
-
-
+        public async Task<bool> BUSLIC_Click_ViewIcon()
+        {
+            return await _baseListpage.Click_ViewIcon();
+        }
 
         public async Task SearchBusinessLicenseAsync(
             string ? locationNumber = null,
