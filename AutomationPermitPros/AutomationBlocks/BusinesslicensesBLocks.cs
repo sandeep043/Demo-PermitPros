@@ -302,7 +302,7 @@ namespace AutomationPermitPros.AutomationBlocks
                 await Task.Delay(2000);
                 var deleteIconClicked = await _businessPage.BUSLIC_Click_DeleteIcon();
 
-               
+
                 await Task.Delay(2000);
 
 
@@ -393,6 +393,39 @@ namespace AutomationPermitPros.AutomationBlocks
             }
         }
 
+        // New: try-get toast message with configurable timeout.
+        // Returns (found, message). Does NOT throw on timeout — caller can decide how to handle.
+        public async Task<(bool Found, string Message)> TryGetToastMessageAsync(int timeoutMs = 2000)
+        {
+            try
+            {
+                var toast = _page.GetByRole(AriaRole.Alert);
+                await toast.WaitForAsync(new() { Timeout = timeoutMs });
+                var text = (await toast.InnerTextAsync())?.Trim() ?? string.Empty;
+                return (true, text);
+            }
+            catch (PlaywrightException)
+            {
+                // includes timeout and other Playwright-specific errors
+                return (false, string.Empty);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"TryGetToastMessageAsync error: {ex.Message}");
+                return (false, string.Empty);
+            }
+        }
+
+        // Existing synchronous GetToastMessageAsync remains for callers that expect the original behavior.
+        //public async Task<string> GetToastMessageAsync()
+        //{
+        //    var toast = _page.GetByRole(AriaRole.Alert);
+
+        //    //Wait until toast appears
+        //    await toast.WaitForAsync(new() { Timeout = 5000 });
+
+        //    return (await toast.InnerTextAsync()).Trim();
+        //}
 
         //Business License Action Methods-------------------
 
@@ -460,9 +493,11 @@ namespace AutomationPermitPros.AutomationBlocks
             // Go to create page
             await _businessPage.ClickCreateNew();
             await _businessPage.IsCreatePageLoaded();
+            string testId = data.GetValueOrDefault("TestCaseID") ?? data.GetValueOrDefault("TestID") ?? string.Empty;
 
             // Fill form (Excel-driven)
             await _businessPage.CreateBusinessLicenseAsync(
+                testId: testId,
                 location: data.GetValueOrDefault("Location"),
                 agency: data.GetValueOrDefault("Agency"),
                 licenseNumber: data.GetValueOrDefault("LicenseNumber"),
@@ -491,7 +526,8 @@ namespace AutomationPermitPros.AutomationBlocks
             await _businessPage.BUSLIC_Click_EditIcon();
             await Task.Delay(2000);
 
-            await _businessPage.EditBusinessLicenseAsync(location: data.GetValueOrDefault("EditLocation"),
+            await _businessPage.EditBusinessLicenseAsync(
+                location: data.GetValueOrDefault("EditLocation"),
                 agency: data.GetValueOrDefault("EditAgency"),
                 licenseNumber: data.GetValueOrDefault("EditLicenseNumber"),
                 licenseType: data.GetValueOrDefault("EditLicenseType"),
@@ -508,9 +544,6 @@ namespace AutomationPermitPros.AutomationBlocks
                  prevEscrowStatusId: data.GetValueOrDefault("EditPrevEscrowStatusID"),
                  previousEscrowStatusDate: data.GetValueOrDefault("EditPreviousEscrowStatusDate"));
 
-
-            //if (data.ContainsKey("LicenseType"))
-            //    await _businessPage.EditSelectLocationAsync(data["LicenseType"]);
             await _businessPage.BUSLIC_Adv_Save();
         }
 
@@ -522,7 +555,7 @@ namespace AutomationPermitPros.AutomationBlocks
 
             var reason = data.GetValueOrDefault("Delete_Reason") ?? "Automation Delete";
             await BUSLIC_Block_DeleteWithReason(reason);
-        } 
+        }
 
         public async Task ViewAsync()
         {
@@ -551,6 +584,10 @@ namespace AutomationPermitPros.AutomationBlocks
         }
     }
 }
+
+
+
+
 
 
 

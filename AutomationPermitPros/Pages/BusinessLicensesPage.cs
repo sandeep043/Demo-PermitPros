@@ -1,4 +1,5 @@
 ﻿using AutomationPermitPros.AutomationBlocks;
+using AutomationPermitPros.Config;
 using AutomationPermitPros.Pages.Base;
 using DocumentFormat.OpenXml.Spreadsheet;
 using Microsoft.Playwright;
@@ -546,6 +547,7 @@ private ILocator PageHeader => _page.GetByRole(AriaRole.Heading, new() { Name = 
 
         // New: fill entire create form (only fills values provided - skip null/empty)
         public async Task CreateBusinessLicenseAsync(
+            string? testId = null,
             string? location = null,
             string? licenseReceivedDate = null,
             string? agency = null,
@@ -568,11 +570,11 @@ private ILocator PageHeader => _page.GetByRole(AriaRole.Heading, new() { Name = 
                 await SelectLocationAsync(location);
 
             if (!string.IsNullOrWhiteSpace(licenseReceivedDate))
-            { 
+            {
                 var (year, day) = SplitExcelDate(licenseReceivedDate);
-                await SelectLicenseReceivedDateAsync(year,day);
+                await SelectLicenseReceivedDateAsync(year, day);
             }
-                
+
 
             if (!string.IsNullOrWhiteSpace(agency))
                 await SelectAgencyAsync(agency);
@@ -598,7 +600,7 @@ private ILocator PageHeader => _page.GetByRole(AriaRole.Heading, new() { Name = 
                 var (year, day) = SplitExcelDate(expirationDate);
                 await SelectExperitionDateFromCalendarAsync(year, day);
             }
-                
+
 
             if (!string.IsNullOrWhiteSpace(dateIssued))
             {
@@ -608,16 +610,16 @@ private ILocator PageHeader => _page.GetByRole(AriaRole.Heading, new() { Name = 
 
 
             if (!string.IsNullOrWhiteSpace(effectiveDate))
-            {  
-                var (year,day ) = SplitExcelDate(effectiveDate);
-               await SelectEffectiveDateFromCalendaryAsync(year, day);
+            {
+                var (year, day) = SplitExcelDate(effectiveDate);
+                await SelectEffectiveDateFromCalendaryAsync(year, day);
             }
             if (!string.IsNullOrWhiteSpace(renewalAppReceivedDate))
             {
                 var (year, day) = SplitExcelDate(renewalAppReceivedDate);
                 await SelectRenewalAppReceivedDateFromCalendarAsync(year, day);
             }
-             
+
 
             if (!string.IsNullOrWhiteSpace(applicationRenewalSentDate))
             {
@@ -645,6 +647,11 @@ private ILocator PageHeader => _page.GetByRole(AriaRole.Heading, new() { Name = 
 
             // finally click create
             await ClickCreateButtonAsync();
+
+            var screenShorts = new ScreenShorts(_page);
+            await screenShorts.CaptureScreenshotAsync($"{testId}_BeforeCreate");
+            await Task.Delay(2000);
+
         }
         public async Task SearchBusinessLicenseAsync(
     string? locationNumber = null,
@@ -761,7 +768,7 @@ private ILocator PageHeader => _page.GetByRole(AriaRole.Heading, new() { Name = 
                 await SelectPreviousEscrowStatusDateFromCalendaryAsync(year, day);
             }
 
-
+            await BUSLIC_Adv_Save();
         }
 
         // Submit/back
