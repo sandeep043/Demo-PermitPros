@@ -1,4 +1,5 @@
-﻿using AutomationPermitPros.Pages.Base;
+﻿using AutomationPermitPros.Config;
+using AutomationPermitPros.Pages.Base;
 using DocumentFormat.OpenXml.Spreadsheet;
 using DocumentFormat.OpenXml.Wordprocessing;
 using Microsoft.Playwright;
@@ -106,6 +107,13 @@ namespace AutomationPermitPros.Pages
         public async Task fillOwnerShipAsync(string ownerShip)
         {
             await _page.GetByPlaceholder("Ownership %").FillAsync(ownerShip);
+        }
+        public async Task EditOwnerShipAsync(string ownerShip)
+        {
+            var ownerShipInput = _page.GetByPlaceholder("Ownership %");
+            await ownerShipInput.ClickAsync();
+            await ownerShipInput.FillAsync(ownerShip);
+            await ownerShipInput.PressAsync("Enter");
         }
 
         public async Task StateDropDown(string state)
@@ -340,6 +348,7 @@ namespace AutomationPermitPros.Pages
 
 
         public async Task CreateLocationAsync(
+            string? testId = null,
             string? legalName = null,
             string? locationNumber = null,
             string? locationName = null,
@@ -356,7 +365,7 @@ namespace AutomationPermitPros.Pages
             string? LocationDescription = null,
             string? notes = null,
             string? locationDescription = null,
-            bool? isActive = false
+           string? isActive = null
             )
         {
             if (!string.IsNullOrWhiteSpace(legalName))
@@ -405,15 +414,18 @@ namespace AutomationPermitPros.Pages
                 await AccountingNumberFillAsync(AccountingNumber);
             if (!string.IsNullOrWhiteSpace(notes))
                 await NotesFillsync(notes);
-            if (isActive.HasValue)
-                await IsActiveCheckBoxAsync(isActive.Value);
-
+            if(!string.IsNullOrEmpty(isActive))
+                await IsActiveCheckBoxAsync(Convert.ToBoolean(isActive));
 
             await ClickCreate();
+            await Task.Delay(2000);
+            var screenShorts = new ScreenShorts(_page);
+            await screenShorts.CaptureScreenshotAsync($"{testId}_afterCreate");
+            await Task.Delay(2000);
         }
 
 
-       public async Task EditLocationAsync(
+        public async Task EditLocationAsync(
            string? legalName = null,
             string? locationNumber = null,
             string? locationName = null,
@@ -429,7 +441,7 @@ namespace AutomationPermitPros.Pages
             string? categories = null,
             string? LocationDescription = null,
             string? notes = null,
-            bool? isActive = false
+           string? isActive = null
            )
         {  
             if (!string.IsNullOrWhiteSpace(legalName))
@@ -439,7 +451,7 @@ namespace AutomationPermitPros.Pages
             if (!string.IsNullOrWhiteSpace(locationName))
                 await fillLocationName(locationName);
             if (!string.IsNullOrWhiteSpace(ownerShip))
-                await fillOwnerShipAsync(ownerShip);
+                await EditOwnerShipAsync(ownerShip);
             if (!string.IsNullOrWhiteSpace(dateOpened))
             {
                 var (year, day) = SplitExcelDate(dateOpened);
@@ -459,7 +471,7 @@ namespace AutomationPermitPros.Pages
             if (!string.IsNullOrWhiteSpace(contactEmail))
                 await contactEmailFillAsync(contactEmail);  
 
-            if(!string.IsNullOrWhiteSpace(ParentEntity))
+            if(  !string.IsNullOrWhiteSpace(ParentEntity))
                 await SelectParentEntityDropdown(ParentEntity);
 
             if (!string.IsNullOrWhiteSpace(ManagementEntity))
@@ -479,8 +491,8 @@ namespace AutomationPermitPros.Pages
             if (!string.IsNullOrWhiteSpace(notes))
                 await NotesFillsync(notes);
 
-            if (isActive.HasValue)
-                await IsActiveCheckBoxAsync(isActive.Value);
+            if(!string.IsNullOrWhiteSpace(isActive))
+                await IsActiveCheckBoxAsync(Convert.ToBoolean(isActive));
            
 
 

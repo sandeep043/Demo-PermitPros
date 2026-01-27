@@ -646,10 +646,13 @@ private ILocator PageHeader => _page.GetByRole(AriaRole.Heading, new() { Name = 
                 await FillNotesAsync(notes);
 
             // finally click create
-            await ClickCreateButtonAsync();
 
             var screenShorts = new ScreenShorts(_page);
-            await screenShorts.CaptureScreenshotAsync($"{testId}_BeforeCreate");
+            await screenShorts.CaptureScreenshotAsync($"{testId}_betweenCreate");
+            await Task.Delay(2000);
+            await ClickCreateButtonAsync();
+            await Task.Delay(2000);
+            await screenShorts.CaptureScreenshotAsync($"{testId}_afterCreate");
             await Task.Delay(2000);
 
         }
@@ -679,6 +682,7 @@ private ILocator PageHeader => _page.GetByRole(AriaRole.Heading, new() { Name = 
 
 
         public async Task EditBusinessLicenseAsync(
+            string? testId = null,
    string? location = null,
     string? licenseReceivedDate = null,
     string? agency = null,
@@ -709,7 +713,7 @@ private ILocator PageHeader => _page.GetByRole(AriaRole.Heading, new() { Name = 
                 await SelectExperitionDateFromCalendarAsync(year, day);
 
             }
-                //await FillExpirationDateAsync(expirationDate);
+            //await FillExpirationDateAsync(expirationDate);
             if (!string.IsNullOrWhiteSpace(agency))
                 await EditAgencyAsync(agency);
 
@@ -733,21 +737,21 @@ private ILocator PageHeader => _page.GetByRole(AriaRole.Heading, new() { Name = 
                 var (year, day) = SplitExcelDate(licenseReceivedDate);
                 await SelectLicenseReceivedDateAsync(year, day);
             }
-               
+
             if (!string.IsNullOrWhiteSpace(renewalDate))
-            {  
+            {
                 var (year, day) = SplitExcelDate(renewalDate);
                 await SelectRenewalDateFromCalendarAsync(year, day);
             }
-          
-               
+
+
             if (!string.IsNullOrWhiteSpace(dateIssued))
-            { 
+            {
                 var (year, day) = SplitExcelDate(dateIssued);
                 await SelectDateIssuedFromCalendaryAsync(year, day);
 
             }
-           if(!string.IsNullOrWhiteSpace(effectiveDate))
+            if (!string.IsNullOrWhiteSpace(effectiveDate))
             {
                 var (year, day) = SplitExcelDate(effectiveDate);
                 await SelectEffectiveDateFromCalendaryAsync(year, day);
@@ -769,6 +773,10 @@ private ILocator PageHeader => _page.GetByRole(AriaRole.Heading, new() { Name = 
             }
 
             await BUSLIC_Adv_Save();
+            await Task.Delay(2000);
+            var screenShorts = new ScreenShorts(_page);
+            await screenShorts.CaptureScreenshotAsync($"{testId}_afterEdit");
+            await Task.Delay(2000);
         }
 
         // Submit/back

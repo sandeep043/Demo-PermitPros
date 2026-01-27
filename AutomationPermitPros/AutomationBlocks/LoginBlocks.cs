@@ -33,6 +33,7 @@ namespace AutomationPermitPros.AutomationBlocks
                 await screenShorts.CaptureScreenshotAsync("BusinessLicense_BeforeLogin");
                 await _loginPage.EnterEmail(_config.Credentials.Username);
                 await _loginPage.EnterPassword(_config.Credentials.Password);
+                await screenShorts.CaptureScreenshotAsync("BusinessLicense_AfterLogin");
                 await _loginPage.ClickLogin();
                 await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
                 await _page.WaitForTimeoutAsync(2000);
