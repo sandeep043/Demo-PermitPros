@@ -1,11 +1,13 @@
-﻿using System;
+﻿using AutomationPermitPros.Config;
+using AutomationPermitPros.Pages;
+using Microsoft.Playwright;
+using NUnit.Framework.Internal;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
-using AutomationPermitPros.Pages;
-using Microsoft.Playwright;
 
 namespace AutomationPermitPros.AutomationBlocks
 {
@@ -292,7 +294,7 @@ namespace AutomationPermitPros.AutomationBlocks
 
         }
 
-        public async Task<bool> BUSLIC_Block_DeleteWithReason(string deletionReason)
+        public async Task<bool> BUSLIC_Block_DeleteWithReason(string deletionReason,string testId)
         {
             try
             {
@@ -301,9 +303,8 @@ namespace AutomationPermitPros.AutomationBlocks
                 // Step 1: Click delete icon
                 await Task.Delay(2000);
                 var deleteIconClicked = await _businessPage.BUSLIC_Click_DeleteIcon();
-
-
-                await Task.Delay(2000);
+               
+              
 
 
                 if (!deleteIconClicked)
@@ -318,12 +319,15 @@ namespace AutomationPermitPros.AutomationBlocks
                 // Step 2: Wait for modal to appear
                 await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
                 var isModalVisible = await _businessPage.BUSLIC_IsDeleteModelVisible();
+
                 if (!isModalVisible)
                 {
                     Console.WriteLine("Block Failed: Delete modal did not appear");
                     return false;
                 }
-
+                await Task.Delay(2000);
+                var screenShorts = new ScreenShorts(_page);
+                await screenShorts.CaptureScreenshotAsync($"{testId}_afterEditModal");
                 //// Step 3: Enter deletion reason
                 //var reasonEntered = await _businessPage.BUSLIC_EnterDeletionReason(deletionReason);
                 //if (!reasonEntered)
@@ -334,6 +338,7 @@ namespace AutomationPermitPros.AutomationBlocks
 
                 // Step 4: Confirm deletion
                 var deleteConfirmed = await _businessPage.BUSLIC_ConfirmDelete();
+                await screenShorts.CaptureScreenshotAsync($"{testId}_afterEditModal");
                 await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
                 if (!deleteConfirmed)
                 {
@@ -525,8 +530,10 @@ namespace AutomationPermitPros.AutomationBlocks
 
             await _businessPage.BUSLIC_Click_EditIcon();
             await Task.Delay(2000);
+            string testId = data.GetValueOrDefault("TestCaseID") ?? data.GetValueOrDefault("TestID") ?? string.Empty;
 
             await _businessPage.EditBusinessLicenseAsync(
+                testId: testId,
                 location: data.GetValueOrDefault("EditLocation"),
                 agency: data.GetValueOrDefault("EditAgency"),
                 licenseNumber: data.GetValueOrDefault("EditLicenseNumber"),
@@ -544,17 +551,18 @@ namespace AutomationPermitPros.AutomationBlocks
                  prevEscrowStatusId: data.GetValueOrDefault("EditPrevEscrowStatusID"),
                  previousEscrowStatusDate: data.GetValueOrDefault("EditPreviousEscrowStatusDate"));
 
-            await _businessPage.BUSLIC_Adv_Save();
+            //await _businessPage.BUSLIC_Adv_Save();
         }
 
 
         public async Task DeleteAsync(Dictionary<string, string> data)
         {
             Console.WriteLine("Block: Delete Business License");
-
+            string testId = data.GetValueOrDefault("TestCaseID") ?? data.GetValueOrDefault("TestID") ?? string.Empty;
 
             var reason = data.GetValueOrDefault("Delete_Reason") ?? "Automation Delete";
-            await BUSLIC_Block_DeleteWithReason(reason);
+            await BUSLIC_Block_DeleteWithReason(reason,testId);
+
         }
 
         public async Task ViewAsync()

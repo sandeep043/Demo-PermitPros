@@ -1,6 +1,8 @@
-﻿using AutomationPermitPros.Pages;
+﻿using AutomationPermitPros.Config;
+using AutomationPermitPros.Pages;
 using AutomationPermitPros.Utilities;
 using Microsoft.Playwright;
+using NUnit.Framework.Internal;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -30,18 +32,36 @@ namespace AutomationPermitPros.AutomationBlocks
             return (await toast.InnerTextAsync()).Trim();
         }
 
+        public async Task<(bool Found, string Message)> TryGetToastMessageAsync(int timeoutMs = 2000)
+        {
+            try
+            {
+                var toast = _page.GetByRole(AriaRole.Alert);
+                await toast.WaitForAsync(new() { Timeout = timeoutMs });
+                var text = (await toast.InnerTextAsync())?.Trim() ?? string.Empty;
+                return (true, text);
+            }
+            catch (PlaywrightException)
+            {
+                // includes timeout and other Playwright-specific errors
+                return (false, string.Empty);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"TryGetToastMessageAsync error: {ex.Message}");
+                return (false, string.Empty);
+            }
+        }
 
-        public async Task<bool> Location_Block_DeleteWithReason(string deletionReason)
+
+        public async Task<bool> Location_Block_DeleteWithReason(string deletionReason,string testId)
         {
             try
             {
                 // Step 1: Click delete icon
                 await Task.Delay(2000);
                 var deleteIconClicked = await _locationPage.BUSLIC_Click_DeleteIcon();
-
-
-                await Task.Delay(2000);
-
+             
 
                 if (!deleteIconClicked)
                 {
@@ -55,12 +75,15 @@ namespace AutomationPermitPros.AutomationBlocks
                 // Step 2: Wait for modal to appear
                 await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
                 var isModalVisible = await _locationPage.location_IsDeleteModelVisible();
+
                 if (!isModalVisible)
                 {
                     Console.WriteLine("Block Failed: Delete modal did not appear");
                     return false;
                 }
-
+                await Task.Delay(2000);
+                var screenShorts = new ScreenShorts(_page);
+                await screenShorts.CaptureScreenshotAsync($"{testId}_afterEditModal");
                 //// Step 3: Enter deletion reason
                 //var reasonEntered = await _businessPage.BUSLIC_EnterDeletionReason(deletionReason);
                 //if (!reasonEntered)
@@ -138,7 +161,11 @@ namespace AutomationPermitPros.AutomationBlocks
             Console.WriteLine("-----------------Creating Location------------------------");
 
             await _locationPage.ClickCreateNew();
+            string testId = data.GetValueOrDefault("TestCaseID") ?? data.GetValueOrDefault("TestID") ?? string.Empty;
+
+
             await _locationPage.CreateLocationAsync(
+                testId: testId,
                 legalName: data.GetValueOrDefault("Legal Name"),
                 locationNumber: data.GetValueOrDefault("Location Number"),
                 locationName: data.GetValueOrDefault("Location Name"),
@@ -154,7 +181,7 @@ namespace AutomationPermitPros.AutomationBlocks
                 categories: data.GetValueOrDefault("Categories"),
                 LocationDescription: data.GetValueOrDefault("Location Description"),
                 notes: data.GetValueOrDefault("Notes"),
-                isActive: ExcelHelper.IsTrue(data, "Active")
+                isActive: data.GetValueOrDefault("")
                 );
         }
 
@@ -175,8 +202,11 @@ namespace AutomationPermitPros.AutomationBlocks
         {
             Console.WriteLine("Block: Edit Location record");
             await Task.Delay(2000);
-            await _locationPage.LOC_Click_EditIcon() ;
+            await _locationPage.LOC_Click_EditIcon();
             await Task.Delay(2000);
+            string testId = data.GetValueOrDefault("TestCaseID") ?? data.GetValueOrDefault("TestID") ?? string.Empty;
+
+
             await _locationPage.EditLocationAsync(
                 legalName: data.GetValueOrDefault("EditLegalName"),
                 locationNumber: data.GetValueOrDefault("EditLocationNumber"),
@@ -193,21 +223,24 @@ namespace AutomationPermitPros.AutomationBlocks
                 categories: data.GetValueOrDefault("EditCategories"),
                 LocationDescription: data.GetValueOrDefault("EditLocationDescription"),
                 notes: data.GetValueOrDefault("EditNotes"),
-                isActive: ExcelHelper.IsTrue(data, "EditActive")
+                isActive: data.GetValueOrDefault("Active")
                 );
 
             await _locationPage.LOC_Adv_Save();
-
+            await Task.Delay(2000);
+            var screenShorts = new ScreenShorts(_page);
+            await screenShorts.CaptureScreenshotAsync($"{testId}_afterEdit");
+            await Task.Delay(2000);
         }
 
 
         public async Task DeleteAsync(Dictionary<string, string> data)
         {
             Console.WriteLine("Block: Delete Location r");
-
+            string testId = data.GetValueOrDefault("TestCaseID") ?? data.GetValueOrDefault("TestID") ?? string.Empty;
 
             var reason = data.GetValueOrDefault("Delete_Reason") ?? "Automation Delete";
-            await Location_Block_DeleteWithReason(reason);
+            await Location_Block_DeleteWithReason(reason, testId);
         }
 
 
