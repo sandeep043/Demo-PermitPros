@@ -26,12 +26,13 @@ namespace AutomationPermitPros.Tests
         public async Task Setup()
         {
             _playwright = await Playwright.CreateAsync();
-            _browser = await _playwright.Chromium.LaunchAsync(new Microsoft.Playwright.BrowserTypeLaunchOptions
-            {
-                Headless = false,
-                Args = new[] { "--window-size=1920,1080" }
-            });
-
+            //_browser = await _playwright.Chromium.LaunchAsync(new Microsoft.Playwright.BrowserTypeLaunchOptions
+            //{
+            //    Headless = false,
+            //    Args = new[] { "--window-size=1920,1080" }
+            //});
+            var settings = TestConfiguration.Instance.AppSettings;
+            _browser = await BrowserFactory.LaunchAsync(_playwright, settings);
 
             _screenshotDirectory = Path.Combine(AppContext.BaseDirectory, "Screenshots");
             //_videoRecordDirectory = Path.Combine(AppContext.BaseDirectory, "Videos");

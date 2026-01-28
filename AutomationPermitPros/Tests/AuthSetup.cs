@@ -1,5 +1,6 @@
 ﻿using AutomationPermitPros.AutomationBlocks;
 using AutomationPermitPros.Config;
+using AutomationPermitPros.Utilities;
 using Microsoft.Playwright;
 using System;
 using System.Collections.Generic;
@@ -19,13 +20,15 @@ namespace AutomationPermitPros.Tests
         public async Task GlobalLoginSetup()
         {
             using var playwright = await Playwright.CreateAsync();
-            var browser = await playwright.Chromium.LaunchAsync(
-                new BrowserTypeLaunchOptions
-                {
-                    Headless = false,
-                    Args = new[] { "--window-size=1920,1080" }
-                }
-            );
+            //var browser = await playwright.Chromium.LaunchAsync(
+            //    new BrowserTypeLaunchOptions
+            //    {
+            //        Headless = false,
+            //        Args = new[] { "--window-size=1920,1080" }
+            //    }
+            //); 
+            var settings = TestConfiguration.Instance.AppSettings;
+            var browser = await BrowserFactory.LaunchAsync(playwright, settings);
 
             // Create the context with a fixed viewport that matches the browser window size.
             var context = await browser.NewContextAsync(new BrowserNewContextOptions
