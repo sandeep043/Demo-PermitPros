@@ -37,11 +37,11 @@ namespace AutomationPermitPros.Flows
                     await _block.SearchAsync(data);
                     await _block.ReloadAsync();
 
-                    TestReportWriter.AppendResult(testId, "Search", "Completed");
+                    TestReportWriter.AppendResult(testId, "Search", "PASSED");
                 }
                 catch (Exception ex)
                 {
-                    TestReportWriter.AppendResult(testId, "Search", "InComplete", ex.Message);
+                    TestReportWriter.AppendResult(testId, "Search", "FAIL", ex.Message);
                     throw;
                 }
             }
@@ -94,12 +94,12 @@ namespace AutomationPermitPros.Flows
                         Assert.Fail($"Unknown ExpectedOutcome '{expectedOutcome}' in Excel");
                     }
 
-                    TestReportWriter.AppendResult(testId, "Create", "Completed");
+                    TestReportWriter.AppendResult(testId, "Create", "PASSED");
                 }
                 catch (Exception ex)
                 {
                     await screenshots.CaptureScreenshotAsync($"{testId}_Create_Failure");
-                    TestReportWriter.AppendResult(testId, "Create", "InComplete", ex.Message);
+                    TestReportWriter.AppendResult(testId, "Create", "FAIL", ex.Message);
                     throw;
                 }
             }
@@ -120,11 +120,11 @@ namespace AutomationPermitPros.Flows
                     await screenShorts.CaptureScreenshotAsync($"{testId}_afterView");
                     await _block.ReloadAsync();
 
-                    TestReportWriter.AppendResult(testId, "View", "Completed");
+                    TestReportWriter.AppendResult(testId, "View", "PASSED");
                 }
                 catch (Exception ex)
                 {
-                    TestReportWriter.AppendResult(testId, "View", "InComplete", ex.Message);
+                    TestReportWriter.AppendResult(testId, "View", "FAIL", ex.Message);
                     throw;
                 }
             }
@@ -171,12 +171,12 @@ namespace AutomationPermitPros.Flows
                         Assert.Fail($"Unknown ExpectedOutcome '{expectedOutcome}' in Excel");
                     }
                     await _block.ReloadAsync();
-                    TestReportWriter.AppendResult(testId, "Edit", "Completed");
+                    TestReportWriter.AppendResult(testId, "Edit", "PASSED");
                 }
                 catch (Exception ex)
                 {
                     await screenshots.CaptureScreenshotAsync($"{testId}_Edit_Failure");
-                    TestReportWriter.AppendResult(testId, "Edit", "InComplete", ex.Message);
+                    TestReportWriter.AppendResult(testId, "Edit", "FAIL", ex.Message);
                     throw;
                 }
             }
@@ -232,12 +232,12 @@ namespace AutomationPermitPros.Flows
                         Assert.Fail($"Unknown ExpectedOutcome '{expectedOutcome}' in Excel");
                     }
 
-                    TestReportWriter.AppendResult(testId, "Delete", "Completed");
+                    TestReportWriter.AppendResult(testId, "Delete", "PASSED");
                 }
                 catch (Exception ex)
                 {
                     await screenShorts.CaptureScreenshotAsync($"{testId}_Delete_Failure");
-                    TestReportWriter.AppendResult(testId, "Delete", "InComplete", ex.Message);
+                    TestReportWriter.AppendResult(testId, "Delete", "FAIL", ex.Message);
                     throw;
                 }
             }
