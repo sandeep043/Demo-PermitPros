@@ -39,11 +39,11 @@ namespace AutomationPermitPros.Flows
                     await _block.SearchAsync(data);
                     await _block.ReloadAsync();
 
-                    TestReportWriter.AppendResult(testId ,"Search", "Completed");
+                    TestReportWriter.AppendResult(testId ,"Search", "PASSED");
                 }
                 catch (Exception ex)
                 {
-                    TestReportWriter.AppendResult(testId, "Search", "InComplete", ex.Message);
+                    TestReportWriter.AppendResult(testId, "Search", "Fail", ex.Message);
                     throw;
                 }
             }
@@ -63,7 +63,7 @@ namespace AutomationPermitPros.Flows
                     Console.WriteLine("Flow: VALIDATE CREATE");
 
                     // Try to get toast with smaller timeout so we don't hang when required fields are missing.
-                    var (foundToast, actualMessage) = await _block.TryGetToastMessageAsync(timeoutMs: 2000);
+                    var (foundToast, actualMessage) = await _block.TryGetToastMessageAsync(timeoutMs: 3000);
 
                     if (!foundToast)
                     {
@@ -113,12 +113,12 @@ namespace AutomationPermitPros.Flows
                     }
 
                     // If we reach here creation succeeded
-                    TestReportWriter.AppendResult(testId, "Create", "Completed");
+                    TestReportWriter.AppendResult(testId, "Create", "PASSED");
                 }
                 catch (Exception ex)
                 {
                     // record failure and rethrow so test harness can capture/fail and continue outer loop
-                    TestReportWriter.AppendResult(testId, "Create", "InComplete", ex.Message);
+                    TestReportWriter.AppendResult(testId, "Create", "FAIL", ex.Message);
                     throw;
                 }
             }
@@ -138,11 +138,11 @@ namespace AutomationPermitPros.Flows
 
 
 
-                    TestReportWriter.AppendResult(testId, "View", "Completed");
+                    TestReportWriter.AppendResult(testId, "View", "PASSED");
                 }
                 catch (Exception ex)
                 {
-                    TestReportWriter.AppendResult(testId, "View", "InComplete", ex.Message);
+                    TestReportWriter.AppendResult(testId, "View", "FAIL", ex.Message);
                     throw;
                 }
             }
@@ -158,7 +158,7 @@ namespace AutomationPermitPros.Flows
                     await screenShorts.CaptureScreenshotAsync($"{testId}_BeforeEdit");
                     await _block.EditAsync(data);
 
-                    var (foundToast, actualMessage) = await _block.TryGetToastMessageAsync(timeoutMs: 2000);
+                    var (foundToast, actualMessage) = await _block.TryGetToastMessageAsync(timeoutMs: 3000);
                     //var actualMessage = await _block.GetToastMessageAsync();
 
                     if (!foundToast)
@@ -208,11 +208,11 @@ namespace AutomationPermitPros.Flows
                         Assert.Fail($"Unknown ExpectedOutcome '{expectedOutcome}' in Excel");
                     }
                     await _block.ReloadAsync();
-                    TestReportWriter.AppendResult(testId, "Edit", "Completed");
+                    TestReportWriter.AppendResult(testId, "Edit", "PASSED");
                 }
                 catch (Exception ex)
                 {
-                    TestReportWriter.AppendResult(testId, "Edit", "InComplete", ex.Message);
+                    TestReportWriter.AppendResult(testId, "Edit", "FAIL", ex.Message);
                     throw;
                 }
             }
@@ -257,7 +257,7 @@ namespace AutomationPermitPros.Flows
                         );
 
                         bool exists = await _block.BUSLIC_VerifySearchResultExists(
-                            data["LicenseNumber"]
+                            data["Search_LicenseNumber"]
                         );
                         Assert.IsFalse(
                             exists,
@@ -278,11 +278,11 @@ namespace AutomationPermitPros.Flows
                         Assert.Fail($"Unknown ExpectedOutcome '{expectedOutcome}' in Excel");
                     }
 
-                    TestReportWriter.AppendResult(testId, "Delete", "Completed");
+                    TestReportWriter.AppendResult(testId, "Delete", "PASSED");
                 }
                 catch (Exception ex)
                 {
-                    TestReportWriter.AppendResult(testId, "Delete", "InComplete", ex.Message);
+                    TestReportWriter.AppendResult(testId, "Delete", "FAIL", ex.Message);
                     throw;
                 }
             }
