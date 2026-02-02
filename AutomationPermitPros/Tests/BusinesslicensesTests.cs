@@ -3,6 +3,7 @@ using AutomationPermitPros.Config;
 using AutomationPermitPros.Flows;
 using AutomationPermitPros.Pages;
 using AutomationPermitPros.Utilities;
+using DocumentFormat.OpenXml.Spreadsheet;
 using Microsoft.Playwright;
 using System;
 using System.Collections.Generic;
@@ -122,37 +123,39 @@ namespace AutomationPermitPros.Tests
                     TestDataConfig.TestDataExcel,
                     TestDataConfig.ControllerSheet
                 );
+                var executor = new ModuleExecutor(_page);
+
+
 
                 foreach (var controllerRow in controllerData)
                 {
                     if (!ExcelHelper.IsTrue(controllerRow, "Run"))
                         continue;
 
-                    string sheetName = controllerRow["SheetName"].Trim();
+                    string module = controllerRow["Module"].Trim();
+                    string operation = controllerRow["Operation"].Trim();
+                    string sheetName = controllerRow.GetValueOrDefault("SheetName")?.Trim() ?? $"{module}_{operation}";
 
-                    Console.WriteLine($"=== Running Module Sheet: {sheetName} ===");
+                    Console.WriteLine($"=== Running Module '{module}' Operation '{operation}', sheet='{sheetName}' ===");
 
-                    // 2️⃣ Navigate based on module
-                    switch (sheetName)
+                    // dispatch per module (explicit navigation then per-operation execution)
+                    switch (module)
                     {
-                        case "BusinessLicense_TestData":
+                        case "BusinessLicense":
+                        case "BUSLIC":
                             await sideBar.NavigateToAsync("Business Licenses");
-                            await ExecuteModuleSheet(
-                                sheetName,
-                                new BusinessLicensesFlow(_page)
-                            );
+                            await executor.ExecuteBusinessLicenseAsync(operation,sheetName);
                             break;
 
-                        case "Locations_TestData":
+                        case "Location":
+                        case "LOC":
                             await sideBar.NavigateToAsync("Locations");
-                            await ExecuteModuleSheet(
-                                sheetName,
-                                new LocationFlow(_page)
-                            );
+                            await executor.ExecuteLocationAsync(operation,sheetName);
                             break;
 
                         default:
-                            throw new Exception($"Unknown SheetName '{sheetName}' in TestNames");
+                            Console.WriteLine($"Unknown module '{module}' in controller. Skipping.");
+                            break;
                     }
                 }
 
@@ -163,40 +166,8 @@ namespace AutomationPermitPros.Tests
             }
         }
 
-        private async Task ExecuteModuleSheet(
-            string sheetName,
-            dynamic flow)
-        {
-            var testData = ExcelDataProvider.GetData(
-                TestDataConfig.TestDataExcel,
-                sheetName
-            );
-
-            foreach (var row in testData)
-            {
-                if (!ExcelHelper.IsTrue(row, "Run"))
-                    continue;
-
-                Console.WriteLine($"Executing {sheetName} | TestCaseID = {row["TestCaseID"]}");
-
-                try
-                {
-                    await flow.ExecuteAsync(row);
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"TestCaseID {row["TestCaseID"]} FAILED: {ex.Message}");
-                }
-                finally
-                {
-                    if (_page != null)
-                    {
-                        await _page.ReloadAsync();
-                        await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
-                    }
-                }
-            }
+        
         }
     }
-}
+
 
