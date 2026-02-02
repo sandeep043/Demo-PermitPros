@@ -2,6 +2,7 @@
 using AutomationPermitPros.Config;
 using AutomationPermitPros.Report;
 using AutomationPermitPros.Utilities;
+using DocumentFormat.OpenXml.Spreadsheet;
 using Microsoft.Playwright;
 using NUnit.Framework.Internal.Commands;
 using System;
@@ -24,11 +25,70 @@ namespace AutomationPermitPros.Flows
             // The shared report path is initialized once (recommended in test setup) via TestReportWriter.Initialize(...).
         }
 
+
+        public async Task BUSLIC_CreateOnlyAsync()
+        {
+            var testData = ExcelDataProvider.GetData(TestDataConfig.TestDataExcel, "BUSLIC_CREATE");
+            foreach (var row in testData)
+            {
+                if (!ExcelHelper.IsTrue(row, "Run"))
+                    continue;
+                await _block.CreateAsync(row);
+                var outputExpected = row.GetValueOrDefault("CreateExpectedOutcome");
+
+            }
+        }
+
+        public async Task BUSLIC_SearchOnlyAsync(Dictionary<string, string> data)
+        {
+            var testData = ExcelDataProvider.GetData(TestDataConfig.TestDataExcel, "BUSLIC_SEARCH");
+            foreach (var row in testData)
+            {
+                if (!ExcelHelper.IsTrue(row, "Run"))
+                    continue;
+                await _block.CreateAsync(row); 
+
+              
+
+            }
+        } 
+
+        public async Task BUSLIC_EditOnlyAsync(Dictionary<string, string> data)
+        {
+            var testData = ExcelDataProvider.GetData(TestDataConfig.TestDataExcel, "BUSLIC_EDIT");
+            foreach (var row in testData)
+            {
+                if (!ExcelHelper.IsTrue(row, "Run"))
+                    continue;
+                await _block.CreateAsync(row);
+
+            }
+        }
+        public async Task BUSLIC_DeleteOnlyAsync(Dictionary<string, string> data)
+        {
+            var testData = ExcelDataProvider.GetData(TestDataConfig.TestDataExcel, "BUSLIC_DELETE");
+            foreach (var row in testData)
+            {
+                if (!ExcelHelper.IsTrue(row, "Run"))
+                    continue;
+                await _block.CreateAsync(row);
+
+            }
+        }
+
+
+
         public async Task ExecuteAsync(Dictionary<string, string> data)
         {
             string testId = data.GetValueOrDefault("TestCaseID") ?? data.GetValueOrDefault("TestID") ?? string.Empty;
 
             Console.WriteLine($"Executing TestCase: {testId}");
+
+
+
+
+
+
 
             // SEARCH (do not block flow on failure; write report and rethrow so outer loop logs & continues)
             if (ExcelHelper.IsTrue(data, "Search"))
